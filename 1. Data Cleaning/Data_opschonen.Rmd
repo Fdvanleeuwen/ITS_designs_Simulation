@@ -1,0 +1,290 @@
+---
+title: "Data_clean"
+output: pdf_document
+date: "2022-11-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# install.packages("X", repos = 'https://cloud.r-project.org')
+library(openxlsx)
+library(stringr)
+library(tidyverse)
+```
+
+## Import data
+```{r}
+RW27 = read.csv2("Data/LvsExport_20200418_0144_27.csv",sep=";",header=T)
+RW28 = read.csv2("Data/LvsExport_20210930_0144_28.csv",sep=";",header=T)
+RW29 = read.csv2("Data/LvsExport_20221024_0144_29.csv",sep=";",header=T)
+RW30 = read.csv2("Data/LvsExport_20221024_0144_30.csv",sep=";",header=T)
+RW31 = read.csv2("Data/LvsExport_20221024_0144_31.csv",sep=";",header=T)
+```
+
+```{r}
+# make uniwue id's for students
+RW27$leerling = str_c(RW27$sch_brincode,RW27$lrl_nr,sep="_") 
+RW28$leerling = str_c(RW28$sch_brincode,RW28$lrl_nr,sep="_")
+RW29$leerling = str_c(RW29$sch_brincode,RW29$lrl_nr,sep="_")
+RW30$leerling = str_c(RW30$sch_brincode,RW30$lrl_nr,sep="_")
+RW31$leerling = str_c(RW31$sch_brincode,RW31$lrl_nr,sep="_")
+```
+
+```{r}
+# take subset of all the cohort per year
+RW27_M4 = subset(RW27, RW27$afn_code_berekend=="M4")  
+RW27_E4 = subset(RW27, RW27$afn_code_berekend=="E4")
+
+RW28_M4 = subset(RW28, RW28$afn_code_berekend=="M4")
+RW28_E4 = subset(RW28, RW28$afn_code_berekend=="E4")
+RW28_M5 = subset(RW28, RW28$afn_code_berekend=="M5")
+RW28_E5 = subset(RW28, RW28$afn_code_berekend=="E5")
+
+RW29_M5 = subset(RW29, RW29$afn_code_berekend=="M5")
+RW29_E5 = subset(RW29, RW29$afn_code_berekend=="E5")
+RW29_M6 = subset(RW29, RW29$afn_code_berekend=="M6")
+RW29_E6 = subset(RW29, RW29$afn_code_berekend=="E6")
+
+RW30_M6 = subset(RW30, RW30$afn_code_berekend=="M6")
+RW30_E6 = subset(RW30, RW30$afn_code_berekend=="E6")
+RW30_M7 = subset(RW30, RW30$afn_code_berekend=="M7")
+RW30_E7 = subset(RW30, RW30$afn_code_berekend=="E7")
+
+RW31_M7 = subset(RW31, RW31$afn_code_berekend=="M7")
+RW31_E7 = subset(RW31, RW31$afn_code_berekend=="E7")
+
+
+# loop to only take the variables we need
+all_data = list(RW27_M4, RW27_E4, RW28_M4, RW28_E4, RW28_M5, RW28_E5, RW29_M5, RW29_E5,  RW29_M6, RW29_E6, RW30_M6, RW30_E6,RW30_M7, RW30_E7, RW31_M7, RW31_E7 )
+all_data_clean = list()
+
+for (i in 1:length(all_data)){
+  data = all_data[[i]] 
+  data_clean = data %>%
+    mutate(id = leerling,
+           school_id = sch_klantnr)  %>%
+  mutate(dag = ifelse(str_count(lla_afn_dat,"")==8,substr(lla_afn_dat, 1, 2),substr(lla_afn_dat, 1, 1))) %>%
+  mutate(maand = ifelse(str_count(lla_afn_dat,"")==8,substr(lla_afn_dat, 3, 4),substr(lla_afn_dat, 2, 3)) ) %>%
+  mutate(jaar = ifelse(str_count(lla_afn_dat,"")==8,substr(lla_afn_dat, 5, 8),substr(lla_afn_dat, 4, 7)) ) %>% 
+  unite("datum", c("jaar", "maand","dag"), sep = "-", remove = FALSE) %>%
+  mutate(lla_afn_dat = as.Date(datum))  %>%
+    select(id, school_id, lla_schaalscore, lla_afn_dat)
+  all_data_clean[[i]] = data_clean
+}
+
+# give the name back for later
+
+RW27_M4 = all_data_clean[[1]]
+RW27_E4 = all_data_clean[[2]]
+
+RW28_M4 = all_data_clean[[3]]
+RW28_E4 = all_data_clean[[4]]
+RW28_M5 = all_data_clean[[5]]
+RW28_E5 = all_data_clean[[6]]
+
+RW29_M5 = all_data_clean[[7]]
+RW29_E5 = all_data_clean[[8]]
+RW29_M6 = all_data_clean[[9]]
+RW29_E6 = all_data_clean[[10]]
+
+RW30_M6 = all_data_clean[[11]]
+RW30_E6 = all_data_clean[[12]]
+RW30_M7 = all_data_clean[[13]]
+RW30_E7 = all_data_clean[[14]]
+
+RW31_M7 = all_data_clean[[15]]
+RW31_E7 = all_data_clean[[16]]
+
+```
+
+```{r}
+cohort_17_18 = left_join(RW27_M4, RW27_E4, by=c('id', 'school_id')) %>%
+      left_join(., RW28_M5, c('id', 'school_id')) %>%
+      left_join(., RW28_E5, c('id', 'school_id')) %>%
+      left_join(., RW29_M6, c('id', 'school_id')) %>%
+      left_join(., RW29_E6, c('id', 'school_id')) %>%
+      left_join(., RW30_M7, c('id', 'school_id')) %>%
+      left_join(., RW30_E7, c('id', 'school_id')) 
+
+
+# change colnames to usefull names
+cohort_17_18_wide = cohort_17_18  %>%
+  rename(Score_M4 = lla_schaalscore.x,
+         Date_M4 = lla_afn_dat.x,
+         Score_E4 = lla_schaalscore.y,
+         Date_E4 = lla_afn_dat.y,
+         Score_M5 = lla_schaalscore.x.x,
+         Date_M5 = lla_afn_dat.x.x,
+         Score_E5 = lla_schaalscore.y.y,
+         Date_E5 = lla_afn_dat.y.y,
+         Score_M6 = lla_schaalscore.x.x.x,
+         Date_M6 = lla_afn_dat.x.x.x,
+         Score_E6 = lla_schaalscore.y.y.y,
+         Date_E6 = lla_afn_dat.y.y.y,
+         Score_M7 = lla_schaalscore.x.x.x.x,
+         Date_M7 = lla_afn_dat.x.x.x.x,
+         Score_E7 = lla_schaalscore.y.y.y.y,
+         Date_E7 = lla_afn_dat.y.y.y.y)  %>%
+  mutate(cohort = "17/18")   %>%
+  select(id, school_id, cohort, Score_M4, Score_E4, Score_M5, Score_E5, Score_M6, Score_E6, Score_M7, Score_E7, Date_M4, Date_E4, Date_M5, Date_E5, Date_M6, Date_E6, Date_M7, Date_E7)
+
+cohort_18_19 = left_join(RW28_M4, RW28_E4, by=c('id', 'school_id')) %>%
+      left_join(., RW29_M5, c('id', 'school_id')) %>%
+      left_join(., RW29_E5, c('id', 'school_id')) %>%
+      left_join(., RW30_M6, c('id', 'school_id')) %>%
+      left_join(., RW30_E6, c('id', 'school_id')) %>%
+      left_join(., RW31_M7, c('id', 'school_id')) %>%
+      left_join(., RW31_E7, c('id', 'school_id')) 
+
+# change colnames to usefull names
+cohort_18_19_wide = cohort_18_19  %>%
+  rename(Score_M4 = lla_schaalscore.x,
+         Date_M4 = lla_afn_dat.x,
+         Score_E4 = lla_schaalscore.y,
+         Date_E4 = lla_afn_dat.y,
+         Score_M5 = lla_schaalscore.x.x,
+         Date_M5 = lla_afn_dat.x.x,
+         Score_E5 = lla_schaalscore.y.y,
+         Date_E5 = lla_afn_dat.y.y,
+         Score_M6 = lla_schaalscore.x.x.x,
+         Date_M6 = lla_afn_dat.x.x.x,
+         Score_E6 = lla_schaalscore.y.y.y,
+         Date_E6 = lla_afn_dat.y.y.y,
+         Score_M7 = lla_schaalscore.x.x.x.x,
+         Date_M7 = lla_afn_dat.x.x.x.x,
+         Score_E7 = lla_schaalscore.y.y.y.y,
+         Date_E7 = lla_afn_dat.y.y.y.y)  %>%
+  mutate(cohort = "18/19")   %>%
+  select(id, school_id, cohort, Score_M4, Score_E4, Score_M5, Score_E5, Score_M6, Score_E6, Score_M7, Score_E7, Date_M4, Date_E4, Date_M5, Date_E5, Date_M6, Date_E6, Date_M7, Date_E7)
+```
+
+```{r}
+# check the distances between tests for cohort 17/18
+T0 = mean(cohort_17_18_wide$Date_M4)
+T1 = mean(cohort_17_18_wide$Date_E4, na = T)
+T2 = mean(cohort_17_18_wide$Date_M5, na = T)
+T3 = mean(cohort_17_18_wide$Date_E5, na = T)
+T4 = mean(cohort_17_18_wide$Date_M6, na = T)
+T5 = mean(cohort_17_18_wide$Date_E6, na = T)
+T6 = mean(cohort_17_18_wide$Date_M7, na = T)
+T7 = mean(cohort_17_18_wide$Date_E7, na = T)
+
+print(c(T0, T1, T2, T3, T4, T5, T6, T7))
+
+# time of the first intervention 2020-03-16
+T_I = as.Date("2020-03-16")
+differnces_intervenion = c(T0-T_I, T1-T_I, T2-T_I, T3-T_I, T4-T_I, T5-T_I, T6-T_I, T7-T_I)
+# in days and years
+differnces_intervenion
+differnces_intervenion/365
+
+# final time variable
+time_cohort_17_18 = c(-2.13, -1.77, -1.14, -0.77, -0.13,  0.26,  0.99,  1.25)
+
+
+# check the distances between tests for cohort 18/19
+T0 = mean(cohort_18_19_wide$Date_M4)
+T1 = mean(cohort_18_19_wide$Date_E4, na = T)
+T2 = mean(cohort_18_19_wide$Date_M5, na = T)
+T3 = mean(cohort_18_19_wide$Date_E5, na = T)
+T4 = mean(cohort_18_19_wide$Date_M6, na = T)
+T5 = mean(cohort_18_19_wide$Date_E6, na = T)
+T6 = mean(cohort_18_19_wide$Date_M7, na = T)
+T7 = mean(cohort_18_19_wide$Date_E7, na = T)
+
+# check the differences between test
+differnces_intervenion2 = c(T0-T_I, T1-T_I, T2-T_I, T3-T_I, T4-T_I, T5-T_I, T6-T_I, T7-T_I)
+# in days and years
+differnces_intervenion2/365
+
+# final time variable
+time_cohort_18_19 = c(-1.13, -0.77, -0.14,  0.26,  0.99,  1.25,  1.89,  2.24)
+```
+
+```{r}
+
+#  Make it a long formate and add corona dummy and time variable for cohort 17/18
+cohort_17_18_long = cohort_17_18_wide %>% pivot_longer(c(Score_M4, Score_E4, Score_M5,
+         Score_E5, Score_M6, Score_E6, Score_M7, Score_E7),
+         names_to = "timepoint",
+         values_to = "score") %>% 
+   mutate(date = case_when(timepoint == "Score_M4" ~ Date_M4,
+                          timepoint == "Score_E4" ~ Date_E4,
+                          timepoint == "Score_M5" ~ Date_M5,
+                          timepoint == "Score_E5" ~ Date_E5,
+                          timepoint == "Score_M6" ~ Date_M6,
+                          timepoint == "Score_E6" ~ Date_E6,
+                          timepoint == "Score_M7" ~ Date_M7,
+                          timepoint == "Score_E7" ~ Date_E7),
+          time = rep(time_cohort_17_18, nrow(cohort_17_18_wide)),
+         corona =  rep(c(0,0,0,0,0,1,1,1),nrow(cohort_17_18_wide)))  %>% 
+  select(id, school_id, score, time, corona, timepoint, date, cohort)
+
+#  Make it a long formate and add corona dummy and time variable 18/19
+cohort_18_19_long = cohort_18_19_wide %>% pivot_longer(c(Score_M4, Score_E4, Score_M5,
+         Score_E5, Score_M6, Score_E6, Score_M7, Score_E7),
+         names_to = "timepoint",
+         values_to = "score") %>% 
+   mutate(date = case_when(timepoint == "Score_M4" ~ Date_M4,
+                          timepoint == "Score_E4" ~ Date_E4,
+                          timepoint == "Score_M5" ~ Date_M5,
+                          timepoint == "Score_E5" ~ Date_E5,
+                          timepoint == "Score_M6" ~ Date_M6,
+                          timepoint == "Score_E6" ~ Date_E6,
+                          timepoint == "Score_M7" ~ Date_M7,
+                          timepoint == "Score_E7" ~ Date_E7),
+          time = rep(time_cohort_18_19, nrow(cohort_18_19_wide)),
+         corona =  rep(c(0,0,0,1,1,1,1,1),nrow(cohort_18_19_wide)))  %>% 
+  select(id, school_id, score, time, corona, timepoint, date, cohort)
+```
+
+```{r}
+# missings indicator for the long data set
+
+cohort_18_19_long$missing <- 0
+
+for (i in seq(1,nrow(cohort_18_19_long), 8)){
+  x = cohort_18_19_long$score[i:(i+8)]
+  if (sum(is.na(x) > 0)){
+    cohort_18_19_long$missing[i:(i+8)] = 1
+  }
+  else{
+    cohort_18_19_long$missing[i:(i+8)] = 0
+  }
+}
+
+cohort_17_18_long$missing <- 0
+
+for (i in seq(1,nrow(cohort_17_18_long), 8)){
+  x = cohort_17_18_long$score[i:(i+8)]
+  if (sum(is.na(x) > 0)){
+    cohort_17_18_long$missing[i:(i+8)] = 1
+  }
+  else{
+    cohort_17_18_long$missing[i:(i+8)] = 0
+  }
+}
+```
+
+
+```{r}
+# Bind the cohorts into one dataset
+cohort_17_18_19_wide = rbind(cohort_17_18_wide, cohort_18_19_wide)
+cohort_17_18_19_long = rbind(cohort_17_18_long, cohort_18_19_long)
+
+```
+
+```{r}
+# write the data away
+write.table(cohort_17_18_19_wide,"cohort_17_18_19_wide.csv",sep=";",quote=F,row.names=F,col.names=T)
+write.table(cohort_17_18_19_long,"cohort_17_18_19_long.csv",sep=";",quote=F,row.names=F,col.names=T)
+```
+
+```{r}
+sum(table(RW27_M4$leerling))
+sum(table(RW27_M4$leerling)-1)
+```
+
