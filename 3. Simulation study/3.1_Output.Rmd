@@ -1,0 +1,25 @@
+---
+title: "Sim_study_output"
+author: "Florian van Leeuwen"
+date: "2023-02-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = F, warning =F}
+library(haven)
+library(dplyr)
+library(xtable)
+library(simstudy)
+library(lme4)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r}
+# Own functions
+source("functions/Generate_data.R")
+```

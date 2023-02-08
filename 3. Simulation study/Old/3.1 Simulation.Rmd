@@ -150,7 +150,7 @@ Cito_data_sim <- function(seed, N_person, N_sim, step_size, slope_size, N_time){
   for (t in 1:length(N_time)){
   if (N_time[t] == 8){
         v_name <- c("Score2","Score3","Score4","Score5","Score6","Score7","Score8")
-    form <- c("170 + 12.7","170 + 2*12.7","170 + 3*12.7",paste("170 + 4*12.7 +", step_size),paste("170 + 5*12.7 +", step_size),paste("170 + 6*12.7 +", step_size),paste("170 + 7*12.7 +", step_size))
+    form <- c("170 + 12.7","Score2 + 12.7","Score3 + 12.7",paste("Score4 + 12.7 +", step_size),paste("Score5 + 12.7 +", step_size),paste("Score6 + 12.7 +", step_size),paste("Score7 + 12.7 +", step_size))
     var <- c(27,27,26,26,26,25,25,25)
   }
     if (N_time[t] == 12){
@@ -305,7 +305,7 @@ test2 %>%
 
 ```{r}
 # replicate the data from hawley
-N_person2 <- c(150,600,1050,1500,1950, 2400, 2850, 3300, 3750, 4200, 4650, 5100, 5550)
+N_person2 <- c(100, 200, 400, 800, 1600, 3200, 6400)
 
 test3 <- Cito_data_sim2(seed, N_person2, 100, step_size, slope_size, N_time)
 
@@ -326,6 +326,7 @@ test4 %>%
 
 ggsave("sim_study.png")
 ```
+
 ```{r}
 # error is abs verschil gemiddlede Bias, error, MSE
 ```
