@@ -21,5 +21,46 @@ library(tidyr)
 
 ```{r}
 # Own functions
-source("functions/Generate_data.R")
+source("functions/1.Generate_data.R")
+source("functions/2.Models.R")
+source("functions/3.sim_all.R")
 ```
+
+In this case formula's are generated for a case where we have 10 timepoints, with a staring intercept of 170 and a slope of 12.7. The change in intercept is added after the intervention which happens in the middle of the time series, the value here is 4. The change in slope is set to 4.
+
+```{r}
+X <- forms_for_sim(N_time = 10, var = 20, Intercept =170,  Slope = 12.7, step_size = 20,slope_size =  40)
+X
+```
+
+```{r, warning = F}
+test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 10)
+test 
+
+# inspect data
+test %>% 
+  ggplot(aes(y = score, x = time, color = as.factor(id))) +
+  geom_point(alpha = .7, size = .4) +
+  geom_smooth(se = F, size = .5) +
+  guides(color = FALSE)
+```
+
+In the output of the table we can see that person i has 10 scores. The column value is the score without varience and the column score is with varience. There is a treatment dummy and a variable for time. In the figure we can see the generated datapoints for n = 100. 
+
+```{r,time_it = TRUE}
+# define input
+N_person <- c(100, 300, 500, 600)
+N_time <- c(6, 10, 14, 18)
+N_sim <- 100
+var <- 25
+Intercept <- 170
+Slope <- 12.7
+step_size <- 4
+seed <- 123
+slope_size <-  3
+var_time <- 10
+
+out <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, step_size, slope_size, seed, var_time, model = "OLS")
+out
+```
+
