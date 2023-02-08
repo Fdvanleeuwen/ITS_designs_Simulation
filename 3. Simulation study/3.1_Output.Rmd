@@ -17,6 +17,7 @@ library(simstudy)
 library(lme4)
 library(ggplot2)
 library(tidyr)
+library(patchwork)
 ```
 
 ```{r}
@@ -45,22 +46,83 @@ test %>%
   guides(color = FALSE)
 ```
 
-In the output of the table we can see that person i has 10 scores. The column value is the score without varience and the column score is with varience. There is a treatment dummy and a variable for time. In the figure we can see the generated datapoints for n = 100. 
+In the output of the table we can see that person i has 10 scores. The column value is the score without variance and the column score is with variance. There is a treatment dummy and a variable for time. In the figure we can see the generated data points for n = 100. 
 
-```{r,time_it = TRUE}
+```{r}
 # define input
-N_person <- c(100, 300, 500, 600)
-N_time <- c(6, 10, 14, 18)
+N_person <- c(100, 200, 300, 400, 500, 600)
+N_time <- c(6, 8, 10, 12, 14, 16, 18)
 N_sim <- 100
 var <- 25
 Intercept <- 170
 Slope <- 12.7
-step_size <- 4
+step_size <- -3
 seed <- 123
-slope_size <-  3
+slope_size <-  -1
 var_time <- 10
 
+startTime <- Sys.time()
 out <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, step_size, slope_size, seed, var_time, model = "OLS")
+endTime <- Sys.time()
+
 out
+print(endTime - startTime)
+```
+
+```{r}
+# write away the results
+write.csv(out, "results/sim_OLS1")
+```
+
+```{r}
+# heat maps
+P1 <- out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = pre_slope)) +
+  geom_tile() + 
+  labs(title = "Power for pre slope",x = "Number of time points",
+       y = "Number of participants", fill="Power") +
+  theme_minimal()
+
+P2 <- out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = step)) +
+  geom_tile() + 
+  labs(title = "Power for step change",x = "Number of time points",
+       y = "Number of participants", fill="Power") +
+  theme_minimal()
+
+P3 <- out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = slope)) +
+  geom_tile() + 
+  labs(title = "Power for step change", x = "Number of time points",
+       y = "Number of participants", fill="Power") +
+  theme_minimal()
+
+B1 <- out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_pre_slope)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in pre slope", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  theme_minimal()
+
+B2 <- out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in step change", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  theme_minimal()
+
+B3 <- out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
+  geom_tile() + 
+  labs("Percentage bias in slope change", x = "Number of time points",
+       y = "Number of participants", fill="Percentage bias") +
+  theme_minimal()
+```
+
+```{r}
+# inspect the plots
+P1 + P2 + P3
+
+B1 + B2 + B3
 ```
 

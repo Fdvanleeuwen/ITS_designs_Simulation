@@ -29,7 +29,6 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, step_size,
                          forms$Intercept, var_time)
         if (model == "ML"){
           power <- run_ML(data)
-          print(1)
         }
         else if (model == "SEM"){
           # TO FILL IN
