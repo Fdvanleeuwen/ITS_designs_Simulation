@@ -125,4 +125,28 @@ P1 + P2 + P3
 
 B1 + B2 + B3
 ```
+```{r}
+# figure of the sim studie
+time <- rep(seq(10),3)
+group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
+score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
+                       -3, -4.5, -6, -7.5, -9)
+
+data_eex <- data.frame(time = time, 
+            group = group,
+            score = score1)
+
+data_eex %>% 
+  ggplot(aes(x = time, y = score)) +
+  geom_point() +
+  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11, color = "General trend")) +
+  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18, color = "Step")) +
+  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16, color = "Slope")) +
+  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11, color = "Step and slope")) +
+  scale_color_discrete(name="Changing parameter") +
+  labs(title = "The different simulation scenarios", y = "Score", x = "Time") +
+  geom_vline(xintercept = 5.5) +
+  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10))
+
+```
 
