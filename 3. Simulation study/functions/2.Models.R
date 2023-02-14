@@ -87,10 +87,7 @@ run_ML <- function(dd_long){
 }
 
 # growth model
-# run models 
 run_SEM <- function(wide, v_name){
-  # The function runs a ML segmented regression model and outputs the beta's and t-values 
-  #of the intervention dummy and the interaction between this dummy and time. 
   # Latent growth curve model
   v_name <- X$v_name
   form_i <- c("i =~")
@@ -106,13 +103,12 @@ run_SEM <- function(wide, v_name){
       
     }
     else{
-      form_i[i] =  paste("1*",v_name[i-1])
-      form_s[i] = paste(time[i-1],"*",v_name[i-1])
+      form_i[i] =  paste("1*",v_name[i-1],"\n", sep = "")
+      form_s[i] = paste(time[i-1],"*",v_name[i-1],sep = "")
     }
   }
-  
-  form_i_c = gsub(" ","",paste(form_i,collapse=" ")) 
-  form_s_c = gsub(" ","",paste(form_s,collapse=" "))
+  form_i_c = paste(form_i,collapse=" ")
+  form_s_c = paste(form_s,collapse=" ")
   
   final_lgm = paste(c(form_i_c, form_s_c),collapse=" ")
   
