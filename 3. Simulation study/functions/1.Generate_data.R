@@ -47,6 +47,6 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time){
   
   dd_long_var <- dd_long %>% 
     mutate(score = rnorm(nrow(dd_long), value, var_time))
-  return(dd_long_var)
+  return(list(long = dd_long_var, wide = dd))
   
 }
