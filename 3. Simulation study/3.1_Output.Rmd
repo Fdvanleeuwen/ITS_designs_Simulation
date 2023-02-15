@@ -31,20 +31,22 @@ source("functions/3.sim_all.R")
 In this case formula's are generated for a case where we have 10 timepoints, with a staring intercept of 170 and a slope of 12.7. The change in intercept is added after the intervention which happens in the middle of the time series, the value here is 4. The change in slope is set to 4.
 
 ```{r}
-X <- forms_for_sim(N_time = 6, var = 20, Intercept =170,  Slope = 12.7, step_size = -3,slope_size =  -10)
+X <- forms_for_sim(N_time = 10, var = 20, Intercept =170,  Slope = 12.7, step_size = -2,slope_size =  -3)
 X
 ```
 
 ```{r, warning = F}
-test <- gen_data(X$form, X$v_name, X$var, N_person = 50, X$Intercept, var_time = 10)
-test$wide
+test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 10)
 
 # inspect data
 test$long %>% 
-  ggplot(aes(y = score, x = time, color = as.factor(id))) +
+  ggplot(aes(y = value, x = time, color = as.factor(id))) +
   geom_point(alpha = .7, size = .4) +
   geom_smooth(se = F, size = .5) +
   guides(color = FALSE)
+```
+```{r}
+
 ```
 
 ```{r}
@@ -52,64 +54,65 @@ test$long %>%
 v_name <- X$v_name
 form_i <- c("i =~")
 form_s <- c("s =~")
+form_i2 <- c("i2 =~")
+form_s2 <- c("s2 =~")
 
-time = seq(1,length(v_name)+1,1)-(length(v_name)+1)/2
+time = seq(0,length(v_name),1)
+step_indc = c(rep(0, length(v_name)/2), rep(1, length(v_name)/2))
 
 for (i in 2:(length(v_name)+1)){
   
     if (i != length(v_name)+1){
-      form_i[i] =  paste("1*",v_name[i-1],"+")
-      form_s[i] = paste(time[i-1],"*",v_name[i-1], "+")
-      
+      form_i[i] =  paste("1*",v_name[i-1],"+", sep = "")
+      form_s[i] = paste(time[i-1],"*",v_name[i-1], "+",sep = "")
+      form_i2[i] = paste(step_indc[i-1],"*",v_name[i-1],"+", sep = "")
     }
   else{
     form_i[i] =  paste("1*",v_name[i-1],"\n", sep = "")
-    form_s[i] = paste(time[i-1],"*",v_name[i-1],sep = "")
+    form_s[i] = paste(time[i-1],"*",v_name[i-1],"\n",sep = "")
+    form_i2[i] = paste(step_indc[i-1],"*",v_name[i-1],"\n", sep = "")
+  }
+  
+  if (i > length(v_name)/2){
+    form_s2[i] = ""
+  }
+  
+  else if(i > length(v_name)/2){
+    form_s2[i] = paste(time[i-1],"*",v_name[i-1], "+",sep = "")
+  }
+  else(i == length(v_name)+1){
+    form_s2[i] = paste(time[i-1],"*",v_name[i-1],sep = "")
   }
 }
+
 form_i_c = paste(form_i,collapse=" ")
 form_s_c = paste(form_s,collapse=" ")
-
+form_i2_c = paste(form_i2,collapse=" ")
+form_s2_c = paste(form_s2,collapse=" ")
+form_i_c
+form_s_c
+form_i2_c
+form_s2_c
 final_lgm = paste(c(form_i_c, form_s_c),collapse=" ")
 
-final_lgm
 ```
+
+```{r}
+i2 =~ 0*Score_M4 + 0*Score_E4 + 0*Score_M5 + 0*Score_E5 + 0*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7
+         s2 =~ 0.26*Score_E6 + .99*Score_M7 + 1.25*Score_E7
+         i ~~ 0*i2
+         i ~~ 0*s2
+         s ~~ 0*i2
+         s ~~ 0*s2
+```
+
 
 ```{r}
 # model not running
-helper = test$wide
-GCM1_fit <- growth(final_lgm, data=helper)
-summary(GCM1_fit, standardized = TRUE)
+GCM1_fit <- growth(final_lgm, data=test$wide)
+summary(GCM1_fit)
 parameterEstimates(GCM1_fit)
 
-# why is the cor 1?
-test$wide %>% 
-  select(-id) %>% 
-  cor(.)
-```
-```{r}
-#test data
-def <- defData(varname = "Score1", dist = "normal", formula = 170,
-                 variance = 22)
-def <- defData(def, varname = "Score2", dist = "normal", formula = "Score1+12.7",
-                 variance = 28)
-def <- defData(def, varname = "Score3", dist = "normal", formula = "Score2+12.7",
-                 variance = 13)
-def <- defData(def, varname = "Score4", dist = "normal", formula = "Score3+12.7",
-                 variance = 18)
-def <- defData(def, varname = "Score5", dist = "normal", formula = "Score4+12.7",
-                 variance = 22)
-def <- defData(def, varname = "Score6", dist = "normal", formula = "Score5+12.7",
-                 variance = 28)
-
-dd <- genData(100, def)
-dd %>% 
-  select(-id) %>% 
-  cor(.)
-
-GCM1_fit <- growth(final_lgm, data=dd)
-summary(GCM1_fit, standardized = TRUE)
-#parameterEstimates(GCM1_fit)
 ```
 
 In the output of the table we can see that person i has 10 scores. The column value is the score without variance and the column score is with variance. There is a treatment dummy and a variable for time. In the figure we can see the generated data points for n = 100. 
@@ -133,6 +136,15 @@ endTime <- Sys.time()
 
 out
 print(endTime - startTime)
+```
+
+```{r}
+# effect sizes
+ES <- c(0.01, 0.02, 0.05, 0.1)
+
+step_size_all <- c()
+slope_size_all <- c()
+# formula to run all models with different effect sizes
 ```
 
 ```{r}

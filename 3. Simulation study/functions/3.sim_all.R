@@ -1,5 +1,5 @@
 sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, step_size, 
-                    slope_size, seed, var_time, model = c("OLS, ML, SEM")){
+                    slope_size, seed, var_time, model = c("OLS, ML, SEM"), cov = FALSE){
   # The function takes in all arguments needed for the simulation study and outputs the power/bias.
   set.seed(seed)
   significant_pre_slope <- c()
@@ -28,13 +28,13 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, step_size,
         data <- gen_data(forms$form, forms$v_name, forms$var, N_person[p], 
                          forms$Intercept, var_time)
         if (model == "ML"){
-          power <- run_ML(data)
+          power <- run_ML(data$long)
         }
         else if (model == "SEM"){
-          # TO FILL IN
+          power <- run_SEM(data$wide, forms$v_name, cov = cov)
         }
         else{
-          power <- run_OLS(data)
+          power <- run_OLS(data$long)
         }
         significant_pre_slope_sub [p,s] <- power$significant_pre_slope
         significant_step_sub[p,s] <- power$significant_step

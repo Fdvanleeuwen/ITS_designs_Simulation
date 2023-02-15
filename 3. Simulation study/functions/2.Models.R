@@ -87,60 +87,123 @@ run_ML <- function(dd_long){
 }
 
 # growth model
-run_SEM <- function(wide, v_name){
+run_SEM <- function(wide, v_name, cov = FALSE){
+  
   # Latent growth curve model
-  v_name <- X$v_name
   form_i <- c("i =~")
   form_s <- c("s =~")
+  form_i2 <- c("i2 =~")
+  form_s2 <- c("s2 =~")
   
-  time = seq(1,length(v_name)+1,1)-(length(v_name)+1)/2
+  # create indicators for time and step size
+  time = seq(0,length(v_name),1)
+  step_indc = c(rep(0, length(v_name)/2), rep(1, length(v_name)/2))
   
-  for (i in 2:(length(v_name)+1)){
+  for (g in 2:(length(v_name)+1)){
     
-    if (i != length(v_name)+1){
-      form_i[i] =  paste("1*",v_name[i-1],"+")
-      form_s[i] = paste(time[i-1],"*",v_name[i-1], "+")
-      
+    if (g != length(v_name)+1){
+      form_i[g] =  paste("1*",v_name[g-1],"+", sep = "")
+      form_s[g] = paste(time[g-1],"*",v_name[g-1], "+",sep = "")
+      form_i2[g] = paste(step_indc[g-1],"*",v_name[g-1],"+", sep = "")
     }
     else{
-      form_i[i] =  paste("1*",v_name[i-1],"\n", sep = "")
-      form_s[i] = paste(time[i-1],"*",v_name[i-1],sep = "")
+      form_i[g] =  paste("1*",v_name[g-1],"\n", sep = "")
+      form_s[g] = paste(time[g-1],"*",v_name[g-1],"\n",sep = "")
+      form_i2[g] = paste(step_indc[g-1],"*",v_name[g-1],"\n", sep = "")
+    }
+    
+    if (g <= length(v_name)/2 + 1){
+      form_s2[g] = ""
+    }
+    if (g > length(v_name)/2 +1){
+      form_s2[g] = paste(time[g-length(v_name)/2],"*",v_name[g-1], "+",sep = "")
+    }
+    if (g == length(v_name)+1){
+      form_s2[g] = paste(time[g-length(v_name)/2],"*",v_name[g-1],sep = "")
     }
   }
+  
   form_i_c = paste(form_i,collapse=" ")
   form_s_c = paste(form_s,collapse=" ")
+  form_i2_c = paste(form_i2,collapse=" ")
+  form_s2_c = paste(form_s2,collapse=" ")
+  form_cov ='\n i ~~ 0*i2
+         i ~~ 0*s2
+         s ~~ 0*i2
+         s ~~ 0*s2'
   
-  final_lgm = paste(c(form_i_c, form_s_c),collapse=" ")
+  if (cov == FALSE){
+    final_lgm = paste(c(form_i_c, form_s_c, form_i2_c, form_s2_c),collapse=" ")
+  }
   
-  # ML regression
-  M3 <- growth(final_lgm, data=test$wide)
-  M3_sum <- summary(GCM1_fit)
+  else{
+    final_lgm = paste(c(form_i_c, form_s_c, form_i2_c, form_s2_c, form_cov),collapse=" ")
+  }
+  
+  
+  # Piece wise laten growth model regression
+  M3 <- growth(final_lgm, data=wide)
+  X = parameterEstimates(GCM1_fit)
   
   # obtain coefficients
-  #beta_1 <- 
-  #beta_2 <- 
-  #beta_3 <- 
+  
+  beta_1 <- X %>% 
+    filter(lhs == "s",
+           op == "~1") %>% 
+    select(est)
+  
+  beta_1 <- beta_1[1,1]
+  
+  beta_2 <- X %>% 
+    filter(lhs == "i2",
+           op == "~1") %>% 
+    select(est)
+  
+  beta_2 <- beta_2[1,1]
+  
+  beta_3 <- X %>% 
+    filter(lhs == "s2",
+           op == "~1") %>% 
+    select(est)
+  
+  beta_3 <- beta_3[1,1]
   
   # Obtain the t-values
-  #t_value_pre_slope <- 
-  #t_value_step_M2 <- 
-  #t_value_slope_M2 <- 
+  z_value_pre_slope <- X %>% 
+    filter(lhs == "s",
+           op == "~1") %>% 
+    select(z)
   
-  if (abs(t_value_pre_slope) > 1.96){
+  z_value_pre_slope <- z_value_pre_slope[1,1]
+  
+  z_value_step_M2 <- X %>% 
+    filter(lhs == "s2",
+           op == "~1") %>% 
+    select(z)
+  z_value_step_M2 <- z_value_step_M2[1,1]
+  
+  z_value_slope_M2 <- X %>% 
+    filter(lhs == "i2",
+           op == "~1") %>% 
+    select(z)
+  
+  z_value_slope_M2 <- z_value_slope_M2[1,1]
+  
+  if (abs(z_value_pre_slope) > 2.00){
     significant_pre_slope <- 1
   }
   else{
     significant_pre_slope <- 0
   }
   
-  if (abs(t_value_step_M2) > 1.96){
+  if (abs(z_value_step_M2) > 2.00){
     significant_step <- 1
   }
   else{
     significant_step <- 0
   }
   
-  if (abs(t_value_slope_M2) > 1.96){
+  if (abs(z_value_slope_M2) > 2.00){
     significant_slope <- 1
   }
   else{

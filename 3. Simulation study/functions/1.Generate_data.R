@@ -38,15 +38,22 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time){
   }
   # Generate a data set with N_people
   dd <- genData(N_person, def)
+  
+  # generate noise 
+  
+  M_noise<-matrix(rnorm(N_person*length(X$v_name), 0, var_time),nrow=N_person)
+  
+  dd[,2:(length(v_name))] = dd[,2:(length(v_name))]  + M_noise
+    
   # change df to long format and add a variable for time and a dummy for treatment
   dd_long <- pivot_longer(data = dd, 
                           cols = c(2:(length(form)+2)))
   dd_long <- dd_long %>%  
     mutate(treatment = rep(c(rep(0,(length(form)+1)/2), (rep(1,(length(form)+1)/2))), N_person),
-           time = rep(seq(1,length(form)+1,1), N_person)-(length(form)+1)/2-0.5)
+           time = rep(seq(1,length(form)+1,1), N_person)-(length(form)+1)/2-0.5,
+           score = value)
   
-  dd_long_var <- dd_long %>% 
-    mutate(score = rnorm(nrow(dd_long), value, var_time))
-  return(list(long = dd_long_var, wide = dd))
+  
+  return(list(long = dd_long, wide = dd))
   
 }
