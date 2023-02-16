@@ -9,12 +9,69 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## First results simulation study
+The following parameters were used for the simulation study:
+* Number of person: 100, 300, 500, 700, 900, 1200
+* Number of time points: 6, 8, 10, 12, 14, 16, 18
+* Number of simulations: 100
+* Intercept: 170
+* Variance of the intercept: N(0,25)
+* Slope: 12.7
+* Variance added after data generation: N(0,20)
+* Effect sizes as % of the slope: 0.01, 0.02, 0.03, 0.04, 0.05, 0.06
+
+The simulation was run for three conditions, see Figure below:
+* Only a step change
+* Only a slope change
+* A step and slope change
+
+```{r}
+# figure of the sim studie
+time <- rep(seq(10),3)
+group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
+score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
+                       -3, -4.5, -6, -7.5, -9)
+
+data_eex <- data.frame(time = time, 
+            group = group,
+            score = score1)
+
+data_eex %>% 
+  ggplot(aes(x = time, y = score)) +
+  geom_point() +
+  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11, color = "General trend")) +
+  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18, color = "Step")) +
+  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16, color = "Slope")) +
+  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11, color = "Step and slope")) +
+  scale_color_discrete(name="Changing parameter") +
+  labs(title = "The different simulation scenarios", y = "Score", x = "Time") +
+  geom_vline(xintercept = 5.5) +
+  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10))
+
+#ggsave("figures/sim_setup.png")
+```
+
+Each took about 30 minutes to compute (1.5 hour in total) using the following OLS model:
+
+$$
+Y_i = \beta_0 + \beta_1*Time + \beta_2*Intervention + \beta_3*Time*Interventios
+$$
+
+TOTAL NUMBER OF CONDITIONS: 6*7*6*3 = 756
+
+The output of the simulation was assessed on three criteria:
+* The average power
+* The average bias
+* The precision (number of times bias was > 5%)
 
 ```{r}
 # import the data
+out10 <- read.csv("results/sim10.csv")
+out01 <- read.csv("results/sim01.csv")
+out11 <- read.csv("results/sim11.csv")
 ```
 
+### Scenario 1: Only a step change
 ```{r}
 out %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = pre_slope)) +
@@ -68,7 +125,6 @@ out %>%
     theme_minimal()
 ```
 
-
 ```{r}
 out %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_pre_slope)) +
@@ -95,40 +151,13 @@ out %>%
     theme_minimal()
 ```
 
+### Scenario 2: Only a slope change
+### Scenario 3: A step and slope change
 
-```{r}
-# inspect the plots
-P1 + P2 + P3
 
-B1 + B2 + B3
-```
 
-```{r}
-# figure of the sim studie
-time <- rep(seq(10),3)
-group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
-score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
-                       -3, -4.5, -6, -7.5, -9)
 
-data_eex <- data.frame(time = time, 
-            group = group,
-            score = score1)
-
-data_eex %>% 
-  ggplot(aes(x = time, y = score)) +
-  geom_point() +
-  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11, color = "General trend")) +
-  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18, color = "Step")) +
-  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16, color = "Slope")) +
-  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11, color = "Step and slope")) +
-  scale_color_discrete(name="Changing parameter") +
-  labs(title = "The different simulation scenarios", y = "Score", x = "Time") +
-  geom_vline(xintercept = 5.5) +
-  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10))
-
-ggsave("figures/sim_setup.png")
-```
-
+#### another option for the simulation plot
 ```{r}
 # figure of the sim studie
 time <- rep(seq(10),3)
