@@ -68,14 +68,15 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
           bias_precent_b1_sub[p,s] <- (power$beta_1 - Slope)/Slope * 100
           
           if (treatment_step == 0){
-            bias_precent_b2_sub[p,s] <- (power$beta_2 + 0.5 * slope) * 100 
+            bias_precent_b2_sub[p,s] <- 0
           }
+          
           else{
-            bias_precent_b2_sub[p,s] <- (power$beta_2 - step + 0.5 * slope)/step * 100 
+            bias_precent_b2_sub[p,s] <- (power$beta_2 - step)/step * 100 
           }
           
           if (treatment_slope == 0){
-            bias_precent_b3_sub[p,s] <- power$beta_3* 100
+            bias_precent_b3_sub[p,s] <- 0
           }
           else{
             bias_precent_b3_sub[p,s] <- (power$beta_3 - slope)/slope * 100

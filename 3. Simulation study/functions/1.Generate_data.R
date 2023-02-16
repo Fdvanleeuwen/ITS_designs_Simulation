@@ -9,13 +9,13 @@ forms_for_sim <- function(N_time, var, Intercept, Slope,step_size, slope_size = 
     v_name_final[k] <- paste(v_name[k],numbs[k], sep = "")
   }
   
-  
+  step_adjust <- slope_size*0.5
   for (h in 1:(length(numbs)-1)){
     if (h < (N_time/2)){
       form[h] <- paste(v_name_final[h],"+", Slope)
     }
     else if (h == (N_time/2)){
-      form[h] <- paste(v_name_final[h],"+", Slope, "+", step_size)
+      form[h] <- paste(v_name_final[h],"+", Slope, "+", step_size, "+", step_adjust)
     }
     else{
       form[h] <- paste(v_name_final[h],"+", Slope, "+", slope_size)
@@ -41,7 +41,7 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time){
   
   # generate noise 
   
-  M_noise<-matrix(rnorm(N_person*length(X$v_name), 0, var_time),nrow=N_person)
+  M_noise<-matrix(rnorm(N_person*length(v_name), 0, var_time),nrow=N_person)
   
   dd[,2:(length(v_name))] = dd[,2:(length(v_name))]  + M_noise
     
