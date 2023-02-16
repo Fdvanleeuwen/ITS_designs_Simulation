@@ -31,15 +31,13 @@ source("functions/3.sim_all.R")
 In this case formula's are generated for a case where we have 10 timepoints, with a staring intercept of 170 and a slope of 12.7. The change in intercept is added after the intervention which happens in the middle of the time series, the value here is 4. The change in slope is set to 4.
 
 ```{r}
-X <- forms_for_sim(N_time = 10, var = 20, Intercept =0,  Slope = 10, step_size = 0, slope_size =  -3)
+X <- forms_for_sim(N_time = 10, var = 20, Intercept = 170,  Slope = 12.7, step_size = -1, slope_size =  -3)
 X
 ```
 
 ```{r, warning = F}
-test <- gen_data(X$form, X$v_name, X$var, N_person = 1000, X$Intercept, var_time = 0)
+test <- gen_data(X$form, X$v_name, X$var, N_person = 1000, X$Intercept, var_time = 30)
 
-
-lm(score ~ time*treatment, data = test$long)
 
 # inspect data
 test$long %>% 
@@ -47,34 +45,39 @@ test$long %>%
   geom_point(alpha = .7, size = .4) +
   geom_smooth(se = F, size = .5) +
   guides(color = FALSE)
+
 ```
 
 In the output of the table we can see that person i has 10 scores. The column value is the score without variance and the column score is with variance. There is a treatment dummy and a variable for time. In the figure we can see the generated data points for n = 100. 
 
 ```{r}
 # define input
-N_person <- c(100, 300, 500, 700, 900)
-N_time <- c(6, 8, 10, 12, 14, 16, 18, 20)
+N_person <- c(100, 300, 500, 700, 900, 1100)
+N_time <- c(6, 8, 10, 12, 14, 16, 18)
 N_sim <- 100
 var <- 25
 Intercept <- 170
 Slope <- 12.7
 seed <- 102
 var_time <- 20
-ES <- c(0.01, 0.03, 0.05, 0.07)
-treatment_step <- 0
-treatment_slope <- 1
+ES <- c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06)
+treatment_step <- 1
+treatment_slope <- 0
 
 startTime <- Sys.time()
-out <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step, treatment_slope, model = "OLS")
+out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 0, model = "OLS")
 endTime <- Sys.time()
 
-out
 print(endTime - startTime)
+out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = 1, model = "OLS")
+out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 1, model = "OLS")
 ```
 
 ```{r}
 # write away the results
-write.csv(out, "results/simtest.csv")
+write.csv(out10, "results/sim10.csv")
+write.csv(out01, "results/sim01.csv")
+write.csv(out11, "results/sim11.csv")
 ```
+
 
