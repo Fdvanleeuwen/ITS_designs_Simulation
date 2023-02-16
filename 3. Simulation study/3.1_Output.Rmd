@@ -31,12 +31,12 @@ source("functions/3.sim_all.R")
 In this case formula's are generated for a case where we have 10 timepoints, with a staring intercept of 170 and a slope of 12.7. The change in intercept is added after the intervention which happens in the middle of the time series, the value here is 4. The change in slope is set to 4.
 
 ```{r}
-X <- forms_for_sim(N_time = 10, var = 20, Intercept =170,  Slope = 12.7, step_size = -2,slope_size =  -3)
+X <- forms_for_sim(N_time = 10, var = 20, Intercept =170,  Slope = 12.7, step_size = -2, slope_size =  -3)
 X
 ```
 
 ```{r, warning = F}
-test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 10)
+test <- gen_data(X$form, X$v_name, X$var, N_person = 1000, X$Intercept, var_time = 30)
 
 # inspect data
 test$long %>% 
@@ -45,93 +45,25 @@ test$long %>%
   geom_smooth(se = F, size = .5) +
   guides(color = FALSE)
 ```
-```{r}
-
-```
-
-```{r}
-# Latent growth curve model
-v_name <- X$v_name
-form_i <- c("i =~")
-form_s <- c("s =~")
-form_i2 <- c("i2 =~")
-form_s2 <- c("s2 =~")
-
-time = seq(0,length(v_name),1)
-step_indc = c(rep(0, length(v_name)/2), rep(1, length(v_name)/2))
-
-for (i in 2:(length(v_name)+1)){
-  
-    if (i != length(v_name)+1){
-      form_i[i] =  paste("1*",v_name[i-1],"+", sep = "")
-      form_s[i] = paste(time[i-1],"*",v_name[i-1], "+",sep = "")
-      form_i2[i] = paste(step_indc[i-1],"*",v_name[i-1],"+", sep = "")
-    }
-  else{
-    form_i[i] =  paste("1*",v_name[i-1],"\n", sep = "")
-    form_s[i] = paste(time[i-1],"*",v_name[i-1],"\n",sep = "")
-    form_i2[i] = paste(step_indc[i-1],"*",v_name[i-1],"\n", sep = "")
-  }
-  
-  if (i > length(v_name)/2){
-    form_s2[i] = ""
-  }
-  
-  else if(i > length(v_name)/2){
-    form_s2[i] = paste(time[i-1],"*",v_name[i-1], "+",sep = "")
-  }
-  else(i == length(v_name)+1){
-    form_s2[i] = paste(time[i-1],"*",v_name[i-1],sep = "")
-  }
-}
-
-form_i_c = paste(form_i,collapse=" ")
-form_s_c = paste(form_s,collapse=" ")
-form_i2_c = paste(form_i2,collapse=" ")
-form_s2_c = paste(form_s2,collapse=" ")
-form_i_c
-form_s_c
-form_i2_c
-form_s2_c
-final_lgm = paste(c(form_i_c, form_s_c),collapse=" ")
-
-```
-
-```{r}
-i2 =~ 0*Score_M4 + 0*Score_E4 + 0*Score_M5 + 0*Score_E5 + 0*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7
-         s2 =~ 0.26*Score_E6 + .99*Score_M7 + 1.25*Score_E7
-         i ~~ 0*i2
-         i ~~ 0*s2
-         s ~~ 0*i2
-         s ~~ 0*s2
-```
-
-
-```{r}
-# model not running
-GCM1_fit <- growth(final_lgm, data=test$wide)
-summary(GCM1_fit)
-parameterEstimates(GCM1_fit)
-
-```
 
 In the output of the table we can see that person i has 10 scores. The column value is the score without variance and the column score is with variance. There is a treatment dummy and a variable for time. In the figure we can see the generated data points for n = 100. 
 
 ```{r}
 # define input
-N_person <- c(100, 300, 500, 700, 900, 1100, 1300)
+N_person <- c(100, 300, 500, 700, 900)
 N_time <- c(6, 8, 10, 12, 14, 16, 18, 20)
-N_sim <- 1000
+N_sim <- 100
 var <- 25
 Intercept <- 170
 Slope <- 12.7
-step_size <- -3
-seed <- 101
-slope_size <-  -1
-var_time <- 10
+seed <- 102
+var_time <- 20
+ES <- c(0.01, 0.03, 0.05, 0.07)
+treatment_step <- 1
+treatment_slope <- 0
 
 startTime <- Sys.time()
-out <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, step_size, slope_size, seed, var_time, model = "OLS")
+out <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step, treatment_slope, model = "OLS")
 endTime <- Sys.time()
 
 out
@@ -139,147 +71,7 @@ print(endTime - startTime)
 ```
 
 ```{r}
-# effect sizes
-ES <- c(0.01, 0.02, 0.05, 0.1)
-
-step_size_all <- c()
-slope_size_all <- c()
-# formula to run all models with different effect sizes
-```
-
-```{r}
 # write away the results
-write.csv(out, "results/sim_OLS1")
-```
-
-```{r}
-# heat maps
-P1 <- out %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = pre_slope)) +
-  geom_tile() + 
-  labs(title = "Power for pre slope",x = "Number of time points",
-       y = "Number of participants", fill="Power") +
-  theme_minimal()
-
-P2 <- out %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = step)) +
-  geom_tile() + 
-  labs(title = "Power for step change",x = "Number of time points",
-       y = "Number of participants", fill="Power") +
-  theme_minimal()
-
-P3 <- out %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = slope)) +
-  geom_tile() + 
-  labs(title = "Power for slope change", x = "Number of time points",
-       y = "Number of participants", fill="Power") +
-  theme_minimal()
-
-B1 <- out %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_pre_slope)) +
-  geom_tile() + 
-  labs(title = "Percentage bias in pre slope", x = "Number of time points", 
-       y = "Number of participants", fill="Percentage bias") +
-  theme_minimal()
-
-B2 <- out %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
-  geom_tile() + 
-  labs(title = "Percentage bias in step change", x = "Number of time points", 
-       y = "Number of participants", fill="Percentage bias") +
-  theme_minimal()
-
-B3 <- out %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
-  geom_tile() + 
-  labs("Percentage bias in slope change", x = "Number of time points",
-       y = "Number of participants", fill="Percentage bias") +
-  theme_minimal()
-```
-
-```{r}
-# inspect the plots
-P1 + P2 + P3
-
-B1 + B2 + B3
-```
-```{r}
-# figure of the sim studie
-time <- rep(seq(10),3)
-group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
-score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
-                       -3, -4.5, -6, -7.5, -9)
-
-data_eex <- data.frame(time = time, 
-            group = group,
-            score = score1)
-
-data_eex %>% 
-  ggplot(aes(x = time, y = score)) +
-  geom_point() +
-  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11, color = "General trend")) +
-  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18, color = "Step")) +
-  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16, color = "Slope")) +
-  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11, color = "Step and slope")) +
-  scale_color_discrete(name="Changing parameter") +
-  labs(title = "The different simulation scenarios", y = "Score", x = "Time") +
-  geom_vline(xintercept = 5.5) +
-  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10))
-
-ggsave("figures/sim_setup.png")
-```
-```{r}
-# figure of the sim studie
-time <- rep(seq(10),3)
-group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
-score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
-                       -3, -4.5, -6, -7.5, -9)
-
-data_eex <- data.frame(time = time, 
-            group = group,
-            score = score1)
-
-P1 <- data_eex %>% 
-  filter(group == "Step") %>% 
-  ggplot(aes(x = time, y = score)) +
-  geom_point() +
-  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11)) +
-  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18), color = "red") +
-  guides(color="none") +
-  ylim(0, 20) +
-  labs(title = "Step", y = "Score", x = "Time") +
-  geom_vline(xintercept = 5.5) +
-  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
-  theme_classic()
-
-P2 <- data_eex %>% 
-  filter(group == "Slope") %>% 
-  ggplot(aes(x = time, y = score)) +
-  geom_point() +
-  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11)) +
-  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16), color = "green") +
-  guides(color="none") +
-  ylim(0, 20) +
-  labs(title = "Slope", y = "Score", x = "Time") +
-  geom_vline(xintercept = 5.5) +
-  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
-  theme_classic()
-
-P3 <- data_eex %>% 
-  filter(group == "Step and slope") %>% 
-  ggplot(aes(x = time, y = score)) +
-  geom_point() +
-  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11)) +
-  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11),  color = "blue") +
-  guides(color="none") +
-  ylim(0, 20) +
-  labs(title = "Step and slope", y = "Score", x = "Time") +
-  geom_vline(xintercept = 5.5) +
-  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
-  theme_classic()
-
-P1 + P2 + P3
-
-ggsave("figures/sim_setup1.png")
+write.csv(out, "results/simtest.csv")
 ```
 

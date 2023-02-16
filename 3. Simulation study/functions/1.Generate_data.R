@@ -57,3 +57,16 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time){
   return(list(long = dd_long, wide = dd))
   
 }
+
+All_conditions <- function(effect_sizes, slope){
+  
+  step_size_all <- c()
+  slope_size_all <- c()
+  
+    for (es in effect_sizes){
+      step_size_all = append(step_size_all,es*slope)
+      slope_size_all = append(slope_size_all,es*slope)
+    }
+
+  return(list(step_size_all = step_size_all, slope_size_all = slope_size_all))
+}

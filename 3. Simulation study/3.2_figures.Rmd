@@ -1,0 +1,185 @@
+---
+title: "3.2_Figures"
+author: "Florian van Leeuwen"
+date: "2023-02-15"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+# import the data
+```
+
+```{r}
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = pre_slope)) +
+  geom_tile() + 
+  labs(title = "Power for pre slope",x = "Number of time points",
+       y = "Number of participants", fill="Power") +
+  facet_wrap(~effect_sizes) +
+  theme_minimal() 
+
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = step)) +
+  geom_tile() + 
+  labs(title = "Power for step",x = "Number of time points",
+       y = "Number of participants", fill="Power") +
+  facet_wrap(~effect_sizes) +
+  theme_minimal() 
+
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = slope)) +
+  geom_tile() + 
+  labs(title = "Power for slope",x = "Number of time points",
+       y = "Number of participants", fill="Power") +
+  facet_wrap(~effect_sizes) +
+  theme_minimal() 
+```
+
+```{r}
+# heat maps
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_pre_slope)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in pre slope", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+    theme_minimal()
+
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in step", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+    theme_minimal()
+
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in slope", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+    theme_minimal()
+```
+
+
+```{r}
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = Precision_pre_slope)) +
+  geom_tile() + 
+  labs(title = "Precision in pre slope in nsim = 1000", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+    theme_minimal()
+
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = Precision_step)) +
+  geom_tile() + 
+  labs(title = "Precision in step in nsim = 1000", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+    theme_minimal()
+
+out %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = Precision_slope)) +
+  geom_tile() + 
+  labs(title = "Precisio in slope in nsim = 1000", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+    theme_minimal()
+```
+
+
+```{r}
+# inspect the plots
+P1 + P2 + P3
+
+B1 + B2 + B3
+```
+
+```{r}
+# figure of the sim studie
+time <- rep(seq(10),3)
+group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
+score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
+                       -3, -4.5, -6, -7.5, -9)
+
+data_eex <- data.frame(time = time, 
+            group = group,
+            score = score1)
+
+data_eex %>% 
+  ggplot(aes(x = time, y = score)) +
+  geom_point() +
+  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11, color = "General trend")) +
+  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18, color = "Step")) +
+  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16, color = "Slope")) +
+  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11, color = "Step and slope")) +
+  scale_color_discrete(name="Changing parameter") +
+  labs(title = "The different simulation scenarios", y = "Score", x = "Time") +
+  geom_vline(xintercept = 5.5) +
+  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10))
+
+ggsave("figures/sim_setup.png")
+```
+
+```{r}
+# figure of the sim studie
+time <- rep(seq(10),3)
+group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
+score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
+                       -3, -4.5, -6, -7.5, -9)
+
+data_eex <- data.frame(time = time, 
+            group = group,
+            score = score1)
+
+P1 <- data_eex %>% 
+  filter(group == "Step") %>% 
+  ggplot(aes(x = time, y = score)) +
+  geom_point() +
+  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11)) +
+  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18), color = "red") +
+  guides(color="none") +
+  ylim(0, 20) +
+  labs(title = "Step", y = "Score", x = "Time") +
+  geom_vline(xintercept = 5.5) +
+  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
+  theme_classic()
+
+P2 <- data_eex %>% 
+  filter(group == "Slope") %>% 
+  ggplot(aes(x = time, y = score)) +
+  geom_point() +
+  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11)) +
+  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16), color = "green") +
+  guides(color="none") +
+  ylim(0, 20) +
+  labs(title = "Slope", y = "Score", x = "Time") +
+  geom_vline(xintercept = 5.5) +
+  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
+  theme_classic()
+
+P3 <- data_eex %>% 
+  filter(group == "Step and slope") %>% 
+  ggplot(aes(x = time, y = score)) +
+  geom_point() +
+  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11)) +
+  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11),  color = "blue") +
+  guides(color="none") +
+  ylim(0, 20) +
+  labs(title = "Step and slope", y = "Score", x = "Time") +
+  geom_vline(xintercept = 5.5) +
+  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
+  theme_classic()
+
+P1 + P2 + P3
+
+ggsave("figures/sim_setup1.png")
+```
