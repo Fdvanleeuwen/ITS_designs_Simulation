@@ -1,0 +1,508 @@
+---
+title: "Analysis of Cito data"
+author: "Florian van Leeuwen"
+output: html_document
+date: "2022-11-21"
+---
+
+# Preliminary results
+```{r, echo=FALSE}
+# libraries
+library(tidyverse)
+library(lme4)
+library(stargazer)
+library(texreg)
+library(xtable)
+library(lavaan)
+```
+
+## Load data
+```{r}
+# load data
+cohort_17_18_19_wide = read.csv2("cohort_17_18_19_wide.csv",sep=";",header=T)
+cohort_17_18_19_long = read.csv2("cohort_17_18_19_long.csv",sep=";",header=T)
+```
+
+```{r}
+# Correct the variable types
+cohort_17_18_19_long = cohort_17_18_19_long %>%
+  mutate(score = as.numeric(score),
+         time = as.numeric(time),
+         date = as.Date(date),
+         cohort = as.factor(cohort))
+
+cohort_17_18_19_wide = cohort_17_18_19_wide %>%
+  mutate(Score_M4 = as.numeric(Score_M4),
+         Score_E4 = as.numeric(Score_E4),
+         Score_M5 = as.numeric(Score_M5),
+         Score_E5 = as.numeric(Score_E5),
+         Score_M6 = as.numeric(Score_M6),
+         Score_E6 = as.numeric(Score_E6),
+         Score_M7 = as.numeric(Score_M7),
+         Score_E7 = as.numeric(Score_E7),)
+
+```
+
+## Inspect data
+```{r}
+# Look at how many students have missings in their data
+table(cohort_17_18_19_long$missing)
+
+# look a missings per timepoint
+summary(cohort_17_18_19_wide)
+```
+The long and wide datasets consist of all data for the cohorts starting in 2017 and 2018. \
+
+The data has a dummy indicating if a student has at least one data point missing. It seems that around 2/3 of students have at least one data point missing. The missings and any dupliucates will be deleted for now. \
+
+There is also a corona dummy which is 0,0,0,0,0,1,1,1 for students of the 2017 cohort and 0,0,0,1,1,1,1,1 for the students of the 2018 cohort. \
+
+The dummy for time is not 0/1/.../7 anymore. I changed it reflect that there are differences in the intervals between tests. The difference between tests in the same grade is on average 0.36 years, and between years 0.64. So the time variable no goes like this: 0/.36/1/1.36/2/2.36/3/3.36. *I would like to hear your though on the new time variable.* \
+
+Now on second thought I think it makes a lot more sense to center time to the when the first lock down occurred, which is 2020-03-16. So that is what I did. 
+
+```{r}
+# remove the missings
+cohort_17_18_19_long = cohort_17_18_19_long  %>%
+  filter(missing == 0) %>%
+  select(-missing)
+
+cohort_17_18_19_wide  = cohort_17_18_19_wide  %>%
+  drop_na()
+```
+
+
+```{r}
+# The observations for the first student in the long format
+head(cohort_17_18_19_long, 8)
+
+# And wide format
+head(cohort_17_18_19_wide, 1)
+```
+
+
+
+## PLOTS
+```{r, warning=F}
+# general trend of the two cohorts
+cohort_17_18_19_long  %>%
+  drop_na() %>%
+  group_by(timepoint, cohort) %>%
+  summarise(y = mean(score), d = mean(date)) %>%
+  ggplot(aes(x = d, y = y, color = cohort)) +
+  geom_point(alpha = .7, size = .4) +
+  geom_smooth(se = F, size = .5) +
+   geom_rect(aes(xmin = as.Date("2020-03-16", "%Y-%m-%d"), 
+                xmax = as.Date("2020-06-04",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.5) +
+    geom_rect(aes(xmin = as.Date("2020-12-18", "%Y-%m-%d"), 
+                xmax = as.Date("2021-01-31",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.5) +
+  labs(title = "Average Mathscores age 8-11 per cohort (grey area is lockdown)", y = "Mathscore", x = "Year") +
+  theme_minimal()
+
+# trend for the some indivusal studetns from both cohorts
+cohort_17_18_19_long_sub1 <- cohort_17_18_19_long[0:304,]
+cohort_17_18_19_long_sub2 <- cohort_17_18_19_long[300001:300304,]
+cohort_17_18_19_long_sub = rbind(cohort_17_18_19_long_sub1,cohort_17_18_19_long_sub2 )
+
+cohort_17_18_19_long_sub  %>%
+  ggplot(aes(x = date, y = score, color = as.factor(id))) +
+  geom_point(alpha = .7, size = .4) +
+  geom_smooth(se = F, size = .5) +
+    guides(color = FALSE) +
+   geom_rect(aes(xmin = as.Date("2020-03-16", "%Y-%m-%d"), 
+                xmax = as.Date("2020-06-04",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.5) +
+    geom_rect(aes(xmin = as.Date("2020-12-18", "%Y-%m-%d"), 
+                xmax = as.Date("2021-01-31",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.5) +
+  facet_grid(rows = vars(cohort)) + 
+  labs(title = "Mathscore for individual students per cohort (grey area is lockdown)", y = "MathScore", x = "Year") +
+  theme_minimal()
+
+#ggsave("cito_two_cohorts.png")
+cohort_17_18_19_long_sub
+```
+
+```
+
+The plots show the general trend for two cohorts. I filtered out all missing values in the first plot and students with missing values in the second plot. 
+
+## Analysis
+For the analysis I used the data for two cohorts for the linear regression and the ML model, but no for the LGM because I don't know how this would work. I will only use the data from 1 cohort now, since I find the interpretation else very unintuitive.  \
+
+```{r}
+cohort_17_18_long = cohort_17_18_19_long %>%
+  filter(cohort == "17/18")
+```
+
+
+### Linear regression
+```{r, warning=F}
+# simple models
+LR1 = lm(score ~ time, data = cohort_17_18_long)
+LR2 = lm(score ~ time + corona, data = cohort_17_18_long)
+LR3 = lm(score ~ time*corona , data = cohort_17_18_long)
+
+# output
+stargazer(LR1,LR2,LR3, no.space=TRUE, omit.stat=c("LL","ser","f"), type = "text")
+
+```
+The parameters of the models can be interpreted as population level estimates. The model (1) in the first table indicates that the average math score at the first lockdown is 222.7 (between M6 and E6) and the coefficient for time is 26. Indicating that a student, on average, increases their score by 26 points every calendar year. \
+
+In model (2) a dummy for corona is included and the effect is -11.2. This is related to a decrease of around 35\% of what students learn per year. \
+
+In model (3) a interaction between the corona dummy and the time variable is included and the effect is -7.9. The effect of the corona dummy changes a lot. The effect of the interaction seems very high and is possibly due to the non linear growth paths of students. *What are your thoughts on the effect of the interaction and the change in the coefficient of the corona dummy.* \
+
+```{r}
+# models with time^2
+LR4 = lm(score ~ time + I(time^2), data = cohort_17_18_long)
+LR5 = lm(score ~ time + I(time^2) + corona, data = cohort_17_18_long)
+LR6 = lm(score ~ time*corona + I(time^2) + corona , data = cohort_17_18_long)
+
+
+stargazer(LR4,LR5,LR6, no.space=TRUE, omit.stat=c("LL","ser","f"), type = "text")
+```
+I also ran some models with a quadratic term for time to account for the potential decrease slope. The results from model (1) indicates that the learning curve decreases quite lot per year (15\%). Model (2) shows that if we account for the quadric term the corona dummy is a lot lower. For model (4) I am not sure how to interpret the interaction term between time and corona now that we also have the quadratic term for time. *I would like your though on including the time^2 term and on the interpretation.* \
+
+I will continue with the models without time^2. 
+
+```{r, warning=F}
+# simple models
+LR1_2 = lm(score ~ time + cohort, data = cohort_17_18_19_long)
+LR2_2 = lm(score ~ time + corona + cohort, data = cohort_17_18_19_long)
+LR3_2 = lm(score ~ time*corona + cohort , data = cohort_17_18_19_long)
+
+# output
+stargazer(LR1,LR1_2,LR2,LR2_2,LR3,LR3_2, no.space=TRUE, omit.stat=c("LL","ser","f"), type = "text")
+
+```
+
+```{r}
+# models with time^2
+LR4_2 = lm(score ~ time + I(time^2) + cohort, data = cohort_17_18_19_long)
+LR5_2 = lm(score ~ time + I(time^2) + corona + cohort, data = cohort_17_18_19_long)
+LR6_2 = lm(score ~ time*corona + I(time^2) + corona + cohort , data = cohort_17_18_19_long)
+
+
+stargazer(LR4,LR4_2,LR5,LR5_2,LR6,LR6_2, no.space=TRUE, omit.stat=c("LL","ser","f"), type = "text")
+
+models = list(LR1_2,LR2_2,LR3_2,LR4_2,LR5_2,LR6_2)
+for (model in models){
+  print(AIC(model))
+}
+```
+
+###  Multilevel model
+```{r}
+# models with free intercepts
+MLM1 <- lmer(score ~ 1 + (1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM2 <- lmer(score ~ 1 + time + (1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM3 <- lmer(score ~ 1 + time + cohort + (1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM4 <- lmer(score ~ 1 + time + I(time^2) + cohort +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM5 <- lmer(score ~ 1 + time + I(time^2) + cohort + corona +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM6 <- lmer(score ~ 1 + time*corona + I(time^2) + cohort  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+# ICC model 1
+#performance::icc(MLM1)
+
+# Output only free intercept model
+screenreg(list(MLM1, MLM2, MLM3, MLM4, MLM5, MLM6), 
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Intercept", "Time","cohort","Time^2", "Corona", "Corona*Time"))
+```
+
+
+```{r}
+# models with free intercepts and free slopes
+MLM7 <- lmer(score ~ 1 + time*corona + I(time^2) + cohort  +(1+time|id), REML = FALSE, data = cohort_17_18_19_long)
+
+
+# Output free intercept and free slopes for time
+ screenreg(list(MLM7), 
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Random slope time"))
+```
+The last two models have free slopes for the variable time and both get a fail to converge warning. The variance for the slope is around 24, which is relative to the coefficient a lot smaller than the variance of the intercept. The last model includes an interaction between time and the corona dummy, the estimate is similar to the LR. *The variance of time does not decrease (should it?)*.  
+
+```{r}
+# models with free intercepts
+MLM8 <- lmer(score ~ 1 + (1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM9 <- lmer(score ~ 1 + time + (1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM10 <- lmer(score ~ 1 + time + cohort + (1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM11 <- lmer(score ~ 1 + time*cohort +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM12 <- lmer(score ~ 1 + time + cohort + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM13 <- lmer(score ~ 1 + time + cohort*I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM14 <- lmer(score ~ 1 + time + cohort*I(time^2) + corona +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM15 <- lmer(score ~ 1 + time + corona + I(time^2) + cohort*corona  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM16 <-  lmer(score ~ 1 + time*corona + corona + I(time^2) + cohort*corona  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+
+MLM17 <- lmer(score ~ 1 + time*corona +corona*cohort + time:corona:cohort + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+
+
+# Output only free intercept model
+screenreg(list(MLM8, MLM9, MLM10, MLM11, MLM12, MLM13, MLM14, MLM15, MLM16, MLM17), 
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Intercept", "Time","cohort","cohort and time", "Time^2","Time^2 and cohort", "Corona", "Corona cohort", 'slope time', "extra"))
+```
+
+
+# MODEL FOR OUTPUT 
+
+## SEGMENTED REGRESSION
+```{r}
+SR_out_1 <- lm(score ~ time*corona, data = cohort_17_18_long)
+SR_out_2 <- lm(score ~time*corona, data = cohort_18_19_long)
+
+texreg(list(SR_out_1, SR_out_2),
+          include.deviance = TRUE, 
+          include.rsquared = TRUE, 
+          include.adjrs = TRUE, 
+          custom.model.names = c("Segmented Regression", "Interactions cohort"))
+          
+AIC(SR_out_1)
+AIC(SR_out_2)
+```
+
+## ML MODELS
+```{r}
+MLM_out_1 <- lmer(score ~ 1 + time*corona + cohort + I(time^2)  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM_out_2 <- lmer(score ~ 1 + time*corona +corona*cohort + time:corona:cohort + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+
+
+texreg(list(MLM_out_1, MLM_out_2),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Random intercept", "Interactions cohort"))
+          
+cohort_17_18_long = cohort_17_18_19_long %>%
+  filter(cohort == "17/18")
+  
+cohort_18_19_long = cohort_17_18_19_long %>%
+  filter(cohort == "18/19")
+  
+  
+MLM_simple1 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_simple2 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_18_19_long)
+
+texreg(list(MLM_simple1, MLM_simple2),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE) 
+          
+
+
+#plot original data
+plot(y = cohort_17_18_long$score, x = cohort_17_18_long$date, pch=16, col='steelblue')
+
+#add segmented regression model
+plot(segmented.fit, add=T)
+```
+
+
+
+## Figure of estimates
+```{r}
+# make a new df with the meman values for the cohorts
+
+newdata = data.frame(time = c(-2.13, -1.77, -1.14, -0.77, -0.13,  0.26,  0.99,  1.25),
+                      corona = c(0,0,0,0,0,1,1,1))
+
+newdata2 = data.frame(time = c(-1.13, -0.77, -0.14,  0.26,  0.99,  1.25,  1.89,  2.24),
+                      corona = c(0,0,0,1,1,1,1,1))
+
+
+# calucate the mean timepoint of a test                      
+data_date_17_18 = cohort_17_18_19_long  %>%
+  drop_na() %>%
+  filter(cohort == "17/18") %>%
+  group_by(timepoint, cohort) %>%
+  summarise(date = mean(date)) %>%
+  arrange(date) 
+
+data_date_18_19 = cohort_17_18_19_long  %>%
+  drop_na() %>%
+  filter(cohort == "18/19") %>%
+  group_by(timepoint, cohort) %>%
+  summarise(date = mean(date)) %>%
+  arrange(date) 
+
+# predict new values
+pred = predict(SR_out_1, newdata = newdata) 
+pred2 = predict(SR_out_2, newdata = newdata2) 
+pred
+data_date_17_18$date
+
+data_pred = data.frame(pred = c(pred, pred2))
+data_pred
+data_pred_all = data_pred %>%
+  mutate(score = pred,
+        date = c(data_date_17_18$date, data_date_18_19$date),
+        cohort = c(rep("17/18", 8),  rep("18/19", 8))) 
+  
+
+  geom_point(data = data_pred_all[5,], col = 'blue') +
+
+data_pred_all %>%
+  ggplot(aes(x = date, y = score, color = cohort)) +
+  geom_point(alpha = .7, size = .4) +
+  geom_vline(xintercept = as.Date("2020-03-09", "%Y-%m-%d"), linetype="dashed", size=0.5) +
+    geom_segment(aes(x = as.Date("2019-11-22", "%Y-%m-%d"), y = 220, xend = as.Date("2020-02-25", "%Y-%m-%d"), yend = 231),
+                  arrow = arrow(length = unit(0.3, "cm")), color = "darkred") +
+  geom_segment(aes(x = as.Date("2018-01-28", "%Y-%m-%d"), y = 171.8377, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 234.32), color = "red") + 
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 229.43, xend = as.Date("2021-06-14", "%Y-%m-%d"), yend = 257.6201), color = "red") +
+  geom_segment(aes(x = as.Date("2019-01-26", "%Y-%m-%d"), y = 169.2427, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 210.25), color = "blue") + 
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 207, xend = as.Date("2022-06-10", "%Y-%m-%d"), yend = 257.6201), color = "blue") +
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 207, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 210.25), color = "darkblue", size = 1.3) +
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 229.43, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 234.32), color = "darkred", size = 1.3) +
+  annotate("text", x= as.Date("2020-02-09", "%Y-%m-%d"), y=236.22, label= "B0") + 
+  annotate("text", x= as.Date("2019-03-09", "%Y-%m-%d"), y=212, label= "B1") + 
+  annotate("text", x= as.Date("2019-11-22", "%Y-%m-%d"), y=218, label= "B2") + 
+  annotate("text", x= as.Date("2020-09-09", "%Y-%m-%d"), y=248.22, label= "B1 + B3") + 
+  labs(title = "The predicted scores for both cohorts", x = "Date", y = "Score") +
+  scale_color_discrete(name = "Cohort") +
+  theme_minimal() 
+
+ggsave("Predictions.png")
+data_pred_all %>%
+  ggplot(aes(x = date, y = score, color = cohort)) +
+  geom_point(alpha = .7, size = .4) +
+  geom_smooth(se = F, size = .5) +
+   geom_rect(aes(xmin = as.Date("2020-03-16", "%Y-%m-%d"), 
+                xmax = as.Date("2020-06-04",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.01) +
+    geom_rect(aes(xmin = as.Date("2020-12-18", "%Y-%m-%d"), 
+                xmax = as.Date("2021-01-31",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.01) +
+  labs(title = "Predited Mathscores age 8-11 per cohort (grey area is lockdown)", y = "Mathscore", x = "Year") +
+  theme_minimal()
+
+ggsave("predictions.png")
+
+
+## new predictions plot
+cohort_17_18_19_long %>%
+  ggplot(aes(x = date, y = score, color = cohort)) +
+  geom_point(alpha = .7, size = .4) 
+  
+
+cohort_17_18_19_long  %>%
+  drop_na() %>%
+  group_by(timepoint, cohort) %>%
+  summarise(y = mean(score), d = mean(date), t = mean(time), c = mean(corona))  %>%
+  ggplot(aes(x = d, y = y, color = cohort)) +
+  geom_point(alpha = .7, size = .4) +
+  geom_smooth(aes(x = t, y = y, c = c), method = "lm", formula = y ~ x + c)
+```
+
+
+# Latent growth curve model
+```{r}
+# filter data to one cohort since I am not sure how to specify the factor loadings for the piecewise LGM otherwise
+cohort_17_18_wide = cohort_17_18_19_wide %>%
+  filter(cohort == "17/18") 
+
+# Latent growth curve model
+GCM1 <- "i =~ 1*Score_M4 + 1*Score_E4 + 1*Score_M5 + 1*Score_E5 + 1*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7
+           s =~ -2.13*Score_M4 + -1.77*Score_E4 + -1.14*Score_M5 + -0.77*Score_E5 + -0.13*Score_M6 + 0.26*Score_E6 + .99*Score_M7 + 1.25*Score_E7"
+
+
+GCM1_fit <- growth(GCM1, data=cohort_17_18_wide)
+summary(GCM1_fit, standardized = TRUE)
+```
+The estimates for the latent growth curve model are similar to the ML model. The estimates (variances) of the intercept is 228.5 (708) and the slope is 24 (23.6). We still have many degrees of freedom left in this model. 
+
+```{r}
+# piecewise latent growth curve model
+GCM2 <- "i =~ 1*Score_M4 + 1*Score_E4 + 1*Score_M5 + 1*Score_E5 + 1*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7
+         s =~ -2.13*Score_M4 + -1.77*Score_E4 + -1.14*Score_M5 + -0.77*Score_E5 + -0.13*Score_M6 + 0.26*Score_E6 + .99*Score_M7 + 1.25*Score_E7
+         i2 =~ 0*Score_M4 + 0*Score_E4 + 0*Score_M5 + 0*Score_E5 + 0*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7
+         s2 =~ 0.26*Score_E6 + .99*Score_M7 + 1.25*Score_E7
+         i ~~ 0*i2
+         i ~~ 0*s2
+         s ~~ 0*i2
+         s ~~ 0*s2"
+
+GCM2_fit <- growth(GCM2, data=cohort_17_18_wide)
+summary(GCM2_fit, standardized = TRUE)
+```
+The estimates  of the intercept is 228.5 (708) and the slope are a bit higher than in the LGM. The change in intercept is -3.4, which is rather small to the change in slope of 5. But there is no quadratic term in this model, which could account for some of the slope change. 
+
+NO OUPUT AFTER THIS. 
+```{r}
+# piecewise latent growth curve model with errors between and within free
+GCM3  <- "i =~ 1*Score_M4 + 1*Score_E4 + 1*Score_M5 + 1*Score_E5 + 1*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7
+         s =~ 0*Score_M4 + 0.36*Score_E4 + 1*Score_M5 + 1.36*Score_E5 + 2*Score_M6 + 2.36*Score_E6 + 3*Score_M7 + 3.36*Score_E7
+         i2 =~ 0*Score_M4 + 0*Score_E4 + 0*Score_M5 + 0*Score_E5 + 0*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7
+         s2 =~ .36*Score_E6 + 1*Score_M7 + 1.36*Score_E7
+         i ~~ 0*i2
+         i ~~ 0*s2
+         s ~~ 0*i2
+         s ~~ 0*s2
+         Score_E7 ~ b1*Score_M7
+         Score_M7 ~ b2*Score_E6
+         Score_E6 ~ b1*Score_M6
+         Score_M6 ~ b2*Score_E5
+         Score_E5 ~ b1*Score_M5
+         Score_M5 ~ b2*Score_E4
+         Score_E4 ~ b1*Score_M4"
+
+GCM3_fit <- growth(GCM3, data=cohort_17_18_wide)
+#summary(GCM3_fit, standardized = TRUE)
+
+# For thesis output
+#xtable(parameterEstimates(GCM1_fit))
+```
+
+### AR model
+```{r}
+# adding lag terms
+cohort_17_18_long_lag <- cohort_17_18_long %>%
+  group_by(id) %>%
+  mutate(lag1 = lag(score, n = 1L, order_by = time, default = NA),
+         lag2 = lag(score, n = 2L, order_by = time, default = NA),
+         lag3 = lag(score, n = 3L, order_by = time, default = NA),
+         lag4 = lag(score, n = 4L, order_by = time, default = NA),
+         lag5 = lag(score, n = 5L, order_by = time, default = NA),
+         lag6 = lag(score, n = 6L, order_by = time, default = NA),
+         lag7 = lag(score, n = 7L, order_by = time, default = NA))
+
+LAG1 = lm(score ~ lag1 + time, data = cohort_17_18_long_lag)
+LAG2 = lm(score ~ lag1 + time + corona, data = cohort_17_18_long_lag)
+LAG3 = lm(score ~ lag1+ time*corona , data = cohort_17_18_long_lag)
+
+# output
+stargazer(LR1,LR2,LR3, no.space=TRUE, omit.stat=c("LL","ser","f"), type = "text")
+stargazer(LAG1,LAG2,LAG3, no.space=TRUE, omit.stat=c("LL","ser","f"), type = "text")
+```
