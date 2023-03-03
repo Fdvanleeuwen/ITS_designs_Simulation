@@ -80,38 +80,50 @@ out01 <- read.csv("results/sim01.csv")
 out11 <- read.csv("results/sim11.csv")
 ```
 
-### Scenario 1: Only a step change
+### Select scenario
+```{r}
+df <-  out11
+```
+
+#### Power
 ```{r, fig.height= 4, fig.width=6}
-out10 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = pre_slope)) +
+p1 <- df %>% 
+  rename(z = pre_slope) %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = z)) +
   geom_tile() + 
   labs(title = "Power for pre-slope",x = "Number of time points",
        y = "Number of participants", fill="Power") +
   facet_wrap(~effect_sizes) +
   theme_minimal() 
-```
 
-```{r, echo=F, fig.height= 4, fig.width=6}
-out10 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = step)) +
+p2 <- df %>% 
+  rename(z = step) %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = z)) +
   geom_tile() + 
   labs(title = "Power for step",x = "Number of time points",
        y = "Number of participants", fill="Power") +
   facet_wrap(~effect_sizes) +
   theme_minimal() 
 
-out10 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = slope)) +
+p3 <- df %>% 
+  rename(z = slope) %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = z)) +
   geom_tile() + 
   labs(title = "Power for slope",x = "Number of time points",
        y = "Number of participants", fill="Power") +
   facet_wrap(~effect_sizes) +
   theme_minimal() 
-```
 
+set_scale_union(p1, p2, p3, scale = scale_fill_viridis_c("z"))
+
+p1
+p2
+p3
+```
+#### Bias
 ```{r, echo=F, fig.height= 4, fig.width=6}
 # heat maps
-out10 %>% 
+b1 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = bias_pre_slope)) +
   geom_tile() + 
   labs(title = "Percentage bias in pre slope", x = "Number of time points", 
@@ -119,132 +131,61 @@ out10 %>%
   facet_wrap(~effect_sizes) +
     theme_minimal()
 
-out10 %>% 
+b2 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
   geom_tile() + 
   labs(title = "Percentage bias in step", x = "Number of time points", 
        y = "Number of participants", fill="Percentage bias") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
-```
 
+b3 <- df %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in slope", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+  theme_minimal()
+
+
+set_scale_union(b1, b2, b3, scale = scale_fill_viridis_c("z", option = "A"))
+
+b1
+b2
+b3
+```
+#### Precison (SE)
 ```{r, echo=F, fig.height= 4, fig.width=6}
-out10 %>% 
+v1 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_pre_slope)) +
   geom_tile() + 
   labs(title = "Precision in pre-slope in nsim = 100", x = "Number of time points", 
-       y = "Number of participants", fill="Number of times bias was > 5%") +
+       y = "Number of participants", fill="SE") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
 
-out10 %>% 
+v2 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_step)) +
   geom_tile() + 
   labs(title = "Precision in step in nsim = 100", x = "Number of time points", 
-       y = "Number of participants", fill="Number of times bias was > 5%") +
+       y = "Number of participants", fill="SE") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
 
-```
-
-### Scenario 2: Only a slope change
-The pre-slope seems to be estimated well, so i will leave it out of the rest of the figures.
-
-```{r, echo=F, fig.height= 4, fig.width=6}
-out01 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = step)) +
-  geom_tile() + 
-  labs(title = "Power for step",x = "Number of time points",
-       y = "Number of participants", fill="Power") +
-  facet_wrap(~effect_sizes) +
-  theme_minimal() 
-
-out01 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = slope)) +
-  geom_tile() + 
-  labs(title = "Power for slope",x = "Number of time points",
-       y = "Number of participants", fill="Power") +
-  facet_wrap(~effect_sizes) +
-  theme_minimal() 
-```
-
-```{r, echo=F, fig.height= 4, fig.width=6}
-out01 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
-  geom_tile() + 
-  labs(title = "Percentage bias in slope", x = "Number of time points", 
-       y = "Number of participants", fill="Percentage bias") +
-  facet_wrap(~effect_sizes) +
-    theme_minimal()
-```
-
-```{r, echo=F, fig.height= 4, fig.width=6}
-out01 %>% 
+v3 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_slope)) +
-  geom_tile() + 
-  labs(title = "Precision in slope in nsim = 100", x = "Number of time points", 
-       y = "Number of participants", fill="Number of times bias was > 5%") +
-  facet_wrap(~effect_sizes) +
-    theme_minimal()
-```
-
-
-### Scenario 3: A step and slope change
-```{r, echo=F, fig.height= 4, fig.width=6}
-out11 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = step)) +
-  geom_tile() + 
-  labs(title = "Power for step",x = "Number of time points",
-       y = "Number of participants", fill="Power") +
-  facet_wrap(~effect_sizes) +
-  theme_minimal() 
-
-out11 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = slope)) +
-  geom_tile() + 
-  labs(title = "Power for slope",x = "Number of time points",
-       y = "Number of participants", fill="Power") +
-  facet_wrap(~effect_sizes) +
-  theme_minimal() 
-```
-
-```{r, echo=F, fig.height= 4, fig.width=6}
-out11 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
-  geom_tile() + 
-  labs(title = "Percentage bias in step", x = "Number of time points", 
-       y = "Number of participants", fill="Percentage bias") +
-  facet_wrap(~effect_sizes) +
-    theme_minimal()
-
-out11 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
-  geom_tile() + 
-  labs(title = "Percentage bias in slope", x = "Number of time points", 
-       y = "Number of participants", fill="Percentage bias") +
-  facet_wrap(~effect_sizes) +
-    theme_minimal()
-```
-
-```{r, echo=F, fig.height= 4, fig.width=6}
-out11 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = Precision_step)) +
   geom_tile() + 
   labs(title = "Precision in step in nsim = 100", x = "Number of time points", 
-       y = "Number of participants", fill="Number of times bias was > 5%") +
+       y = "Number of participants", fill="SE") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
 
-out11 %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = Precision_slope)) +
-  geom_tile() + 
-  labs(title = "Precisio in slope in nsim = 100", x = "Number of time points", 
-       y = "Number of participants", fill="Number of times bias was > 5%") +
-  facet_wrap(~effect_sizes) +
-    theme_minimal()
+set_scale_union(v1, v2, v3, scale = scale_fill_viridis_c("z", option = "E"))
+
+v1
+v2
+v3
 ```
-
-
 ### Another option for the simulation plot
 
 ```{r, echo=F, fig.height= 4, fig.width=6}

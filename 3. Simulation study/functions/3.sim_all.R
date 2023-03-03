@@ -65,45 +65,24 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
           significant_pre_slope_sub [p,s] <- power$significant_pre_slope
           significant_step_sub[p,s] <- power$significant_step
           significant_slope_sub[p,s] <- power$significant_slope
-          bias_precent_b1_sub[p,s] <- (power$beta_1 - Slope)/Slope * 100
+          bias_precent_b1_sub[p,s] <- abs((power$beta_1 - Slope)/Slope * 100)
           
           if (treatment_step == 0){
-            bias_precent_b2_sub[p,s] <- 0
+            bias_precent_b2_sub[p,s] <- abs((power$beta_2 * 100))
           }
-          
           else{
-            bias_precent_b2_sub[p,s] <- (power$beta_2 - step)/step * 100 
+            bias_precent_b2_sub[p,s] <- abs((power$beta_2 - step)/step * 100)
           }
           
           if (treatment_slope == 0){
-            bias_precent_b3_sub[p,s] <- 0
+            bias_precent_b3_sub[p,s] <- abs((power$beta_3 * 100))
           }
           else{
-            bias_precent_b3_sub[p,s] <- (power$beta_3 - slope)/slope * 100
+            bias_precent_b3_sub[p,s] <- abs((power$beta_3 - slope)/slope * 100)
           }
           
           N_pers_sub[p] <- N_person[p]
-          
-          if (bias_precent_b1_sub[p,s] > 5){
-            Precision_b1_sub[p,s] <- 1
-          }
-          else {
-            Precision_b1_sub[p,s] <- 0
-          }
-          
-          if (bias_precent_b2_sub[p,s] > 5){
-            Precision_b2_sub[p,s] <- 1
-          }
-          else {
-            Precision_b2_sub[p,s] <- 0
-          }
-          
-          if (bias_precent_b3_sub[p,s] > 5){
-            Precision_b3_sub[p,s] <- 1
-          }
-          else {
-            Precision_b3_sub[p,s] <- 0
-          }
+
         }
         significant_pre_slope2 <- rowMeans(significant_pre_slope_sub)
         significant_step2 <- rowMeans(significant_step_sub)
@@ -111,10 +90,9 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
         bias_precent_b1_2 <- rowMeans(bias_precent_b1_sub)
         bias_precent_b2_2 <- rowMeans(bias_precent_b2_sub)
         bias_precent_b3_2 <- rowMeans(bias_precent_b3_sub)
-        Precision_b1_sub_2 <- rowSums(Precision_b1_sub)
-        Precision_b2_sub_2 <- rowSums(Precision_b2_sub)
-        Precision_b3_sub_2 <- rowSums(Precision_b3_sub)
-        
+        Precision_b1_sub_2 <- apply(bias_precent_b1_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p])
+        Precision_b2_sub_2 <- apply(bias_precent_b2_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p])
+        Precision_b3_sub_2 <- apply(bias_precent_b3_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p])
       }
       significant_pre_slope <- append(significant_pre_slope, significant_pre_slope2)
       significant_step <- append(significant_step, significant_step2)

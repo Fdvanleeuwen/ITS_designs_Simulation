@@ -52,15 +52,15 @@ In the output of the table we can see that person i has 10 scores. The column va
 
 ```{r}
 # define input
-N_person <- c(100, 300, 500, 700, 900, 1100)
-N_time <- c(6, 8, 10, 12, 14, 16, 18)
+N_person <- c(100, 300, 500, 700, 900, 1100, 1300)
+N_time <- c(6, 8, 10, 12, 14, 16)
 N_sim <- 100
 var <- 25
 Intercept <- 170
 Slope <- 12.7
 seed <- 102
 var_time <- 20
-ES <- c(0.01, 0.02, 0.03, 0.04, 0.05, 0.06)
+ES <- c(0.01, 0.05, 0.10, 0.15, 0.20)
 treatment_step <- 1
 treatment_slope <- 0
 
@@ -71,6 +71,10 @@ endTime <- Sys.time()
 print(endTime - startTime)
 out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = 1, model = "OLS")
 out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 1, model = "OLS")
+```
+
+```{r}
+out10
 ```
 
 ```{r}
