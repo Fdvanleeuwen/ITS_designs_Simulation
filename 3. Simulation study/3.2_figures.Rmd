@@ -12,18 +12,24 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, include = F}
 library(tidyverse)
 library(patchwork)
+library(segmented)
 ```
+
+```{r}
+source("functions/4.Set_scale_equal.R")
+```
+
 ## First results simulation study
 The following parameters were used for the simulation study:
 
-* Number of person: 100, 300, 500, 700, 900, 1200
-* Number of time points: 6, 8, 10, 12, 14, 16, 18
-* Number of simulations: 100
+* Number of person: 100, 300, 500, 700, 900, 1100, 1300
+* Number of time points: 6, 8, 10, 12, 14, 16, 18, 20
+* Number of simulations: 25
 * Intercept: 170
 * Variance of the intercept: N(0,25)
 * Slope: 12.7
 * Variance added after data generation: N(0,20)
-* Effect sizes as % of the slope: 0.01, 0.02, 0.03, 0.04, 0.05, 0.06
+* Effect sizes as % of the slope: 0.01, 0.025, 0.5, 0.10,0.15, 0.30
 
 The simulation was run for three conditions, see Figure below:
 
@@ -52,7 +58,8 @@ data_eex %>%
   scale_color_discrete(name="Changing parameter") +
   labs(title = "The different simulation scenarios", y = "Score", x = "Time") +
   geom_vline(xintercept = 5.5) +
-  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10))
+  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
+  theme_minimal()
 
 #ggsave("figures/sim_setup.png")
 ```
@@ -63,13 +70,13 @@ $$
 Y_i = \beta_0 + \beta_1*Time + \beta_2*Intervention + \beta_3*Time*Interventios
 $$
 
-TOTAL NUMBER OF CONDITIONS: 6*7*6*3 = 756
+TOTAL NUMBER OF CONDITIONS: 7*8*6*3 = 1008
 
 The output of the simulation was assessed on three criteria:
 
 * The average power
 * The average bias
-* The precision (number of times bias was > 5%)
+* The standard deviation of the slopes
 
 The bias/precision was not estimated is the step/slope change was set to zero. 
 
@@ -82,14 +89,13 @@ out11 <- read.csv("results/sim11.csv")
 
 ### Select scenario
 ```{r}
-df <-  out11
+df <-  out11_neg_step
 ```
 
 #### Power
 ```{r, fig.height= 4, fig.width=6}
 p1 <- df %>% 
-  rename(z = pre_slope) %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = z)) +
+  ggplot(aes(x = N_t, y = N_pers, fill = pre_slope)) +
   geom_tile() + 
   labs(title = "Power for pre-slope",x = "Number of time points",
        y = "Number of participants", fill="Power") +
@@ -97,8 +103,7 @@ p1 <- df %>%
   theme_minimal() 
 
 p2 <- df %>% 
-  rename(z = step) %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = z)) +
+  ggplot(aes(x = N_t, y = N_pers, fill = step)) +
   geom_tile() + 
   labs(title = "Power for step",x = "Number of time points",
        y = "Number of participants", fill="Power") +
@@ -106,19 +111,24 @@ p2 <- df %>%
   theme_minimal() 
 
 p3 <- df %>% 
-  rename(z = slope) %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = z)) +
+  ggplot(aes(x = N_t, y = N_pers, fill = slope)) +
   geom_tile() + 
   labs(title = "Power for slope",x = "Number of time points",
        y = "Number of participants", fill="Power") +
   facet_wrap(~effect_sizes) +
   theme_minimal() 
 
-set_scale_union(p1, p2, p3, scale = scale_fill_viridis_c("z"))
+set_scale_union(p1, p2, p3, scale = scale_fill_viridis_c("Power"))
 
 p1
+
 p2
+
+ggsave("figures/sPower_step.png")
+
 p3
+
+ggsave("figures/sPower_slope.png")
 ```
 #### Bias
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -148,11 +158,17 @@ b3 <- df %>%
   theme_minimal()
 
 
-set_scale_union(b1, b2, b3, scale = scale_fill_viridis_c("z", option = "A"))
+set_scale_union(b1, b2, b3, scale = scale_fill_viridis_c("Bias", option = "A"))
 
 b1
+
 b2
+
+ggsave("figures/sbias_step.png")
+
 b3
+
+ggsave("figures/sbias_slope.png")
 ```
 #### Precison (SE)
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -180,12 +196,65 @@ v3 <- df %>%
   facet_wrap(~effect_sizes) +
     theme_minimal()
 
-set_scale_union(v1, v2, v3, scale = scale_fill_viridis_c("z", option = "E"))
+set_scale_union(v1, v2, v3, scale = scale_fill_viridis_c("Precision", option = "E"))
 
 v1
+
 v2
+ggsave("figures/sPrecision_step.png")
+
 v3
+ggsave("figures/sPrecision_slope.png")
+
 ```
+
+# set timepoints set and plot 
+```{r}
+# set timepoints set at 8 and plot the difference of power per effect size
+
+power1 <- df %>% 
+  filter(N_t == 8) %>% 
+  ggplot(aes(x = N_pers,  colour = as.factor(effect_sizes))) +
+  geom_line(aes(y = step)) +
+  labs(title = "Step change",y = "Power", x = "Number of people per timepoint") +
+  scale_color_discrete(name = "Effect size") +
+  theme(legend.position = "none")
+
+
+power2 <- df %>% 
+  filter(N_t == 8) %>% 
+  ggplot(aes(x = N_pers,  colour = as.factor(effect_sizes))) +
+  geom_line(aes(y = slope), linetype = "dashed") +
+  labs(title = "Slope change", y = "Power", x = "Number of people per timepoint") +
+  scale_color_discrete(name = "Effect size") 
+
+power1 + power2
+
+ggsave("figures/sp_per_n.png")
+
+bias1 <- df %>% 
+  filter(N_t == 8) %>% 
+  ggplot(aes(x = N_pers,  colour = as.factor(effect_sizes))) +
+  geom_line(aes(y = bias_step)) +
+  labs(title = "Step change",y = "Bias", x = "Number of people per timepoint") +
+  scale_color_discrete(name = "Effect size") +
+  theme(legend.position = "none")
+
+
+bias2 <- df %>% 
+  filter(N_t == 8) %>% 
+  ggplot(aes(x = N_pers,  colour = as.factor(effect_sizes))) +
+  geom_line(aes(y = bias_slope), linetype = "dashed") +
+  labs(title = "Slope change", y = "Bias", x = "Number of people per timepoint") +
+  scale_color_discrete(name = "Effect size") 
+
+bias1 + bias2
+
+ggsave("figures/sb_per_n.png")
+```
+
+
+
 ### Another option for the simulation plot
 
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -242,3 +311,5 @@ P1 + P2 + P3
 
 #ggsave("figures/sim_setup1.png")
 ```
+
+
