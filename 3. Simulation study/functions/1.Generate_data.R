@@ -1,4 +1,4 @@
-forms_for_sim <- function(N_time, var, Intercept, Slope,step_size, slope_size = 0){
+forms_for_sim <- function(N_time, var, Intercept, Slope,step_size, slope_size, additional_step){
   # this is a function to create the formula for generating data
   v_name_final <- c()
   form <- c()
@@ -20,6 +20,12 @@ forms_for_sim <- function(N_time, var, Intercept, Slope,step_size, slope_size = 
     else{
       form[h] <- paste(v_name_final[h],"+", Slope, "+", slope_size)
     }
+  }
+  
+  if (additional_step != 0){
+    time_add_param = round((3/4)*length(numbs))
+    form[time_add_param] = paste(form[time_add_param],"+", additional_step)
+    
   }
   
   var <- var

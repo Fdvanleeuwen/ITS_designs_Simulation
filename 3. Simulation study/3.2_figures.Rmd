@@ -89,7 +89,7 @@ out11 <- read.csv("results/sim11.csv")
 
 ### Select scenario
 ```{r}
-df <-  out11_neg_step
+df <-  out11
 ```
 
 #### Power
@@ -120,15 +120,15 @@ p3 <- df %>%
 
 set_scale_union(p1, p2, p3, scale = scale_fill_viridis_c("Power"))
 
-p1
+#p1
 
 p2
 
-ggsave("figures/sPower_step.png")
+#ggsave("figures/sPower_step.png")
 
 p3
 
-ggsave("figures/sPower_slope.png")
+#ggsave("figures/sPower_slope.png")
 ```
 #### Bias
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -164,11 +164,11 @@ b1
 
 b2
 
-ggsave("figures/sbias_step.png")
+#ggsave("figures/sbias_step.png")
 
 b3
 
-ggsave("figures/sbias_slope.png")
+#ggsave("figures/sbias_slope.png")
 ```
 #### Precison (SE)
 ```{r, echo=F, fig.height= 4, fig.width=6}

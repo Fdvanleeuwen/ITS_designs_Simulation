@@ -1,4 +1,4 @@
-sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, effect_sizes, treatment_step, treatment_slope, model = c("OLS, ML, SEM"), cov = FALSE){
+sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, effect_sizes, treatment_step, treatment_slope, additional_step, model = c("OLS, ML, SEM"), cov = FALSE){
   # The function takes in all arguments needed for the simulation study and outputs the power/bias.
   set.seed(seed)
   
@@ -34,6 +34,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
     
     step = step_conitions[EV]*Slope*treatment_step
     slope = slope_conitions[EV]*Slope*treatment_slope
+    additional_step = step*0.5
     
     for (l in 1:length(N_time)){
       significant_pre_slope_sub <- matrix(NA,nrow=length(N_person),ncol=N_sim)
@@ -50,7 +51,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
       for (p in 1:length(N_person)){
         
         for (s in 1:N_sim){
-          forms <- forms_for_sim(N_time[l], var, Intercept, Slope, step, slope)
+          forms <- forms_for_sim(N_time[l], var, Intercept, Slope, step, slope, additional_step)
           data <- gen_data(forms$form, forms$v_name, forms$var, N_person[p], 
                            forms$Intercept, var_time)
           if (model == "ML"){
@@ -90,9 +91,9 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
         bias_precent_b1_2 <- rowMeans(bias_precent_b1_sub)
         bias_precent_b2_2 <- rowMeans(bias_precent_b2_sub)
         bias_precent_b3_2 <- rowMeans(bias_precent_b3_sub)
-        Precision_b1_sub_2 <- apply(bias_precent_b1_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p])
-        Precision_b2_sub_2 <- apply(bias_precent_b2_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p])
-        Precision_b3_sub_2 <- apply(bias_precent_b3_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p])
+        Precision_b1_sub_2 <- (apply(bias_precent_b1_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p]))
+        Precision_b2_sub_2 <- (apply(bias_precent_b2_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p]))/step
+        Precision_b3_sub_2 <- (apply(bias_precent_b3_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p]))/slope
       }
       significant_pre_slope <- append(significant_pre_slope, significant_pre_slope2)
       significant_step <- append(significant_step, significant_step2)
