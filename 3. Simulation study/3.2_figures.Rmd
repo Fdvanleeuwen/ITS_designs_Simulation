@@ -89,7 +89,7 @@ out11 <- read.csv("results/sim11.csv")
 
 ### Select scenario
 ```{r}
-df <-  out11
+df <- out11_additional_step
 ```
 
 #### Power
@@ -158,9 +158,8 @@ b3 <- df %>%
   theme_minimal()
 
 
-set_scale_union(b1, b2, b3, scale = scale_fill_viridis_c("Bias", option = "A"))
+set_scale_union(b2, b3, scale = scale_fill_viridis_c("Bias", option = "A"))
 
-b1
 
 b2
 
@@ -169,6 +168,16 @@ b2
 b3
 
 #ggsave("figures/sbias_slope.png")
+
+
+df %>% 
+  filter(effect_sizes > 0.05) %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in step", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+    theme_minimal()
 ```
 #### Precison (SE)
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -196,15 +205,15 @@ v3 <- df %>%
   facet_wrap(~effect_sizes) +
     theme_minimal()
 
-set_scale_union(v1, v2, v3, scale = scale_fill_viridis_c("Precision", option = "E"))
+set_scale_union(v2, v3, scale = scale_fill_viridis_c("Precision", option = "E"))
 
-v1
+
 
 v2
-ggsave("figures/sPrecision_step.png")
+#ggsave("figures/sPrecision_step.png")
 
 v3
-ggsave("figures/sPrecision_slope.png")
+#ggsave("figures/sPrecision_slope.png")
 
 ```
 

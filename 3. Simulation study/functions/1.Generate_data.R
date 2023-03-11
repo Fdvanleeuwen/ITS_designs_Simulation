@@ -23,16 +23,15 @@ forms_for_sim <- function(N_time, var, Intercept, Slope,step_size, slope_size, a
   }
   
   if (additional_step != 0){
-    time_add_param = round((3/4)*length(numbs))
+    time_add_param = ceiling((3/4)*(length(numbs)-1))
     form[time_add_param] = paste(form[time_add_param],"+", additional_step)
-    
   }
   
   var <- var
   return(list(form = form, var = var, v_name = v_name_final, Intercept = Intercept))
 }
 
-gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time){
+gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time, additional_step_corr){
   # This function generates data and changes the format from wide to long.
   
   def <- defData(varname = "Score1", dist = "normal", formula = Intercept,
@@ -54,8 +53,23 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time){
   # change df to long format and add a variable for time and a dummy for treatment
   dd_long <- pivot_longer(data = dd, 
                           cols = c(2:(length(form)+2)))
+  
+  if (additional_step_corr == 0){
+    treatment = c(rep(0,(length(form)+1)/2), rep(1,(length(form)+1)/2))
+    time_add_param = round((3/4)*length(numbs))
+  }
+  else{
+    N <- length(form)+1
+    treat_0 <- N/2
+    treat_2 <-ceiling(N-treat_0*1.5)
+    treat_1 <- N - treat_0 - treat_2
+    treatment <- c(rep(0, treat_0), rep(1, treat_1), rep(2, treat_2))
+  }
+  
+  
+  
   dd_long <- dd_long %>%  
-    mutate(treatment = rep(c(rep(0,(length(form)+1)/2), (rep(1,(length(form)+1)/2))), N_person),
+    mutate(treatment = as.factor(rep(treatment, N_person)),
            time = rep(seq(1,length(form)+1,1), N_person)-(length(form)+1)/2-0.5,
            score = value)
   

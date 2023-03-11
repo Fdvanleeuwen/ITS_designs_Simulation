@@ -31,12 +31,33 @@ source("functions/3.sim_all.R")
 In this case formula's are generated for a case where we have 10 timepoints, with a staring intercept of 170 and a slope of 12.7. The change in intercept is added after the intervention which happens in the middle of the time series, the value here is 4. The change in slope is set to 4.
 
 ```{r}
-X <- forms_for_sim(N_time = 10, var = 10, Intercept = 170,  Slope = 12.7, step_size = -8, slope_size =  1, additional_step = -4)
+X <- forms_for_sim(N_time = 8, var = 10, Intercept = 170,  Slope = 12.7, step_size = -8, slope_size =  1, additional_step = -4)
 
 X
+
+N <- length(X$form)+1
+
+treat_0 <- N/2
+
+treat_2 <-ceiling(N-treat_0*1.5)
+
+treat_1 <- N - treat_0 - treat_2
+
+c(rep(0, treat_0), rep(1, treat_1), rep(2, treat_2))
+
+
+N_time = 8
+numbs <- seq(1,N_time,1)
+
+time_add_param = round((3/4)*(length(numbs)-1))
+time_add_param
+
 ```
 
 ```{r, warning = F}
+
+
+
 test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 0)
 
 
@@ -77,43 +98,18 @@ Slope <- 12.7
 seed <- 102
 var_time <- 20
 ES <- c(0.01, 0.025, 0.05, 0.10,0.15, 0.30)
-treatment_step <- 1
-treatment_slope <- 0
-additional_step <- 0
+```
+```{r}
+# Basic setup
 
 startTime <- Sys.time()
-out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 0, model = "OLS")
+out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 0,additional_step = 0,  model = "OLS")
 endTime <- Sys.time()
 
 print(endTime - startTime)
-out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = 1, model = "OLS")
-out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 1, model = "OLS")
-out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 1, model = "OLS")
-```
 
-```{r}
-
-out11_neg_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 1,  model = "OLS")
-
-```
-
-```{r}
-N_person <- c(100, 200, 300, 400, 500)
-N_time <- c(6,8,10,12,14)
-N_sim <- 20
-var <- 25
-Intercept <- 170
-Slope <- 12.7
-seed <- 102
-var_time <- 20
-ES <- c(0.01,0.02,0.05,0.1)
-treatment_step <- 1
-treatment_slope <- 1
-additional_step <- 1
-
-out11_additional_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step, treatment_slope, additional_step, model = "OLS")
-
-out11_additional_step
+out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = 1, additional_step = 0, model = "OLS")
+out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 1, additional_step = 0, model = "OLS")
 ```
 
 ```{r}
@@ -123,19 +119,30 @@ write.csv(out01, "results/sim01.csv")
 write.csv(out11, "results/sim11.csv")
 ```
 
+
 ```{r}
-test1 <- data_frame(x =  rnorm(n),
-           x2 =  rnorm(n),
-           x3 =  rnorm(n),
-           x4 =  rnorm(n),
-           x5 =  rnorm(n),
-           x6 = rnorm(n))
+# One negative parameter
 
-test1
-n <- nrow(test1) 
+out11_neg_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 1,  model = "OLS")
 
-apply(test1, 1, sd) / sqrt(n)
+out11_neg_slope <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = -1,  model = "OLS")
+```
+
+```{r}
+# write away the results
+write.csv(out11_neg_step, "results/out11_neg_step.csv")
+write.csv(out11_neg_slope, "results/out11_neg_slope.csv")
+```
+
+
+```{r}
+out11_additional_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 1, additional_step = 1, model = "OLS")
+
+out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = 1, additional_step = 1, model = "OLS")
+
 
 ```
+
+
 
 

@@ -1,5 +1,5 @@
 # run models 
-run_OLS <- function(dd_long){
+run_OLS <- function(dd_long, additional_step_corr){
   # The function runs a OLS segmented regression model and outputs the beta's and t-values 
   #of the intervention dummy and the interaction between this dummy and time. 
   
@@ -7,14 +7,25 @@ run_OLS <- function(dd_long){
   M1 <- lm(score ~ time*treatment, data = dd_long) 
 
   # obtain coefficients
-  beta_1 <- M1$coefficients[2]
-  beta_2 <- M1$coefficients[3]
-  beta_3 <- M1$coefficients[4]
-  
-  # Obtain the t-values
-  t_value_pre_slope <- summary(M1)$coefficients[2,3]
-  t_value_step_M1 <- summary(M1)$coefficients[3,3]
-  t_value_slope_M1 <- summary(M1)$coefficients[4,3]
+  if (additional_step_corr == 0){
+    beta_1 <- M1$coefficients[2]
+    beta_2 <- M1$coefficients[3]
+    beta_3 <- M1$coefficients[4] 
+    # Obtain the t-values
+    t_value_pre_slope <- summary(M1)$coefficients[2,3]
+    t_value_step_M1 <- summary(M1)$coefficients[3,3]
+    t_value_slope_M1 <- summary(M1)$coefficients[4,3]
+  }
+  else {
+      beta_1 <- M1$coefficients[2]
+      beta_2 <- M1$coefficients[3]
+      beta_3 <- M1$coefficients[5] 
+      # Obtain the t-values
+      t_value_pre_slope <- summary(M1)$coefficients[2,3]
+      t_value_step_M1 <- summary(M1)$coefficients[3,3]
+      t_value_slope_M1 <- summary(M1)$coefficients[5,3]
+  }
+
   
   if (abs(t_value_pre_slope) > 1.96){
     significant_pre_slope <- 1

@@ -1,4 +1,4 @@
-sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, effect_sizes, treatment_step, treatment_slope, additional_step, model = c("OLS, ML, SEM"), cov = FALSE){
+sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, effect_sizes, treatment_step, treatment_slope, additional_step, additional_step_corr, model = c("OLS, ML, SEM"), cov = FALSE){
   # The function takes in all arguments needed for the simulation study and outputs the power/bias.
   set.seed(seed)
   
@@ -53,7 +53,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
         for (s in 1:N_sim){
           forms <- forms_for_sim(N_time[l], var, Intercept, Slope, step, slope, additional_step)
           data <- gen_data(forms$form, forms$v_name, forms$var, N_person[p], 
-                           forms$Intercept, var_time)
+                           forms$Intercept, var_time, additional_step_corr)
           if (model == "ML"){
             power <- run_ML(data$long)
           }
@@ -61,7 +61,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
             power <- run_SEM(data$wide, forms$v_name, cov = cov)
           }
           else{
-            power <- run_OLS(data$long)
+            power <- run_OLS(data$long, additional_step_corr)
           }
           significant_pre_slope_sub [p,s] <- power$significant_pre_slope
           significant_step_sub[p,s] <- power$significant_step
