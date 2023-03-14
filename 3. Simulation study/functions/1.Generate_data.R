@@ -56,7 +56,7 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time, addi
   
   if (additional_step_corr == 0){
     treatment = c(rep(0,(length(form)+1)/2), rep(1,(length(form)+1)/2))
-    time_add_param = round((3/4)*length(numbs))
+    time_add_param = round((3/4)*(length(form)+1))
   }
   else{
     N <- length(form)+1
