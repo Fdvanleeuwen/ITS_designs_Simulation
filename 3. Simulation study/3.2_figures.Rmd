@@ -27,9 +27,9 @@ The following parameters were used for the simulation study:
 * Number of simulations: 25
 * Intercept: 170
 * Variance of the intercept: N(0,25)
-* Slope: 12.7
+* Slope: 33
 * Variance added after data generation: N(0,20)
-* Effect sizes as % of the slope: 0.01, 0.025, 0.5, 0.10,0.15, 0.30
+* Effect sizes as % of the slope: 0.01, 0.025, 0.5, 0.10, 0.15, 0.30
 
 The simulation was run for three conditions, see Figure below:
 
@@ -37,36 +37,7 @@ The simulation was run for three conditions, see Figure below:
 * Only a slope change
 * A step and slope change
 
-```{r, echo=FALSE, message=F, fig.height= 3.5, fig.width=5}
-# figure of the sim studie
-time <- rep(seq(10),3)
-group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10))
-score1 <- time * 2 + c(rep(0,5), rep(-2,5), rep(0,5), -0.5, -1.2, -2.2, -3.2, -4.2, rep(0, 5), 
-                       -3, -4.5, -6, -7.5, -9)
-
-data_eex <- data.frame(time = time, 
-            group = group,
-            score = score1)
-
-data_eex %>% 
-  ggplot(aes(x = time, y = score)) +
-  geom_point() +
-  geom_segment(aes(x = 1, y = 2, xend = 5.5, yend = 11, color = "General trend")) +
-  geom_segment(aes(x = 5.5, y = 9, xend = 10, yend = 18, color = "Step")) +
-  geom_segment(aes(x = 5.5, y = 11, xend = 10, yend = 16, color = "Slope")) +
-  geom_segment(aes(x = 5.5, y = 8.75, xend = 10, yend = 11, color = "Step and slope")) +
-  scale_color_discrete(name="Changing parameter") +
-  labs(title = "The different simulation scenarios", y = "Score", x = "Time") +
-  geom_vline(xintercept = 5.5) +
-  scale_x_continuous("Time", labels=c("T_0", "(N+1)/2", "T_N"), breaks=c(1, 5.5, 10)) +
-  theme_minimal()
-
-#ggsave("figures/sim_setup.png")
-```
-
-
 ```{r}
-
 # figure of the sim studie
 time <- rep(seq(10),4)
 group <- c(rep("Step", 10), rep("Slope", 10), rep("Step and slope", 10), rep("Two steps and slope", 10))
@@ -94,8 +65,6 @@ data_eex %>%
   theme_minimal()
 
 ggsave("figures/sim_setup2.png")
-
-
 ```
 
 
@@ -118,15 +87,24 @@ The bias/precision was not estimated is the step/slope change was set to zero.
 
 ```{r}
 # import the data
-out10 <- read.csv("results/sim10.csv")
-out01 <- read.csv("results/sim01.csv")
-out11 <- read.csv("results/sim11.csv")
+out10 <- read.csv("results/sim10_2.csv")
+out01 <- read.csv("results/sim01_2.csv")
+out11 <- read.csv("results/sim11_2.csv")
+```
+
+
+```{r}
+out11_neg_step_2 <- read.csv("results/out11_neg_step_2.csv")
+out11_neg_slope_2 <- read.csv("results/out11_neg_slope_2.csv")
+out11_additional_step <- read.csv("results/out11_additional_step_2.csv")
+out11_additional_step_corr_2 <- read.csv("results/out11_additional_step_corr_2.csv")
 ```
 
 ### Select scenario
 ```{r}
-df <- out11
+df <- out11_additional_step
 ```
+
 
 #### Power
 ```{r, fig.height= 4, fig.width=6}
@@ -160,17 +138,45 @@ set_scale_union(p1, p2, p3, scale = scale_fill_viridis_c("Power"))
 
 p2
 
-#ggsave("figures/sPower_step.png")
-
+#ggsave("figures/10Power_step.png")
+#ggsave("figures/01Power_step.png")
+#ggsave("figures/11Power_step.png")
 #ggsave("figures/additional_step_Power_step.png")
 
 p3
 
-#ggsave("figures/sPower_slope.png")
+#ggsave("figures/10Power_slope.png")
+#ggsave("figures/01Power_slope.png")
+#ggsave("figures/11Power_slope.png")
+#ggsave("figures/additional_step_Power_slope.png")
 
-#ggsave("figures/additional_step_Power_slop.png")
+
 ```
 #### Bias
+```{r}
+# heat maps
+df %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in pre slope", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+  scale_fill_viridis_c("Bias", option = "A") +
+    theme_minimal()
+
+#ggsave("figures/additional_step_Bias_step.png")
+
+df %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
+  geom_tile() + 
+  labs(title = "Percentage bias in step", x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes) +
+  scale_fill_viridis_c("Bias", option = "A") +
+    theme_minimal()
+
+```
+
 ```{r, echo=F, fig.height= 4, fig.width=6}
 # heat maps
 b1 <- df %>% 
@@ -203,17 +209,43 @@ set_scale_union(b2, b3, scale = scale_fill_viridis_c("Bias", option = "A"))
 
 b2
 
-#ggsave("figures/sbias_step.png")
+#ggsave("figures/10bias_step.png")
+#ggsave("figures/01bias_step.png")
+#ggsave("figures/11bias_step.png")
 
 
 ggsave("figures/additional_step_Bias_step.png")
+
 b3
 
-#ggsave("figures/sbias_slope.png")
+#ggsave("figures/10bias_slope.png")
+#ggsave("figures/01bias_slope.png")
+#ggsave("figures/11bias_slope.png")
 
 ggsave("figures/additional_step_Bias_slope.png")
 ```
 #### Precison (SE)
+
+```{r}
+df %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = Precision_step)) +
+  geom_tile() + 
+  labs(title = "Precision in step in nsim = 100 (divided by effect size)", x = "Number of time points", 
+       y = "Number of participants", fill="SE") +
+  facet_wrap(~effect_sizes) +
+  scale_fill_viridis_c(option = "E") +
+    theme_minimal()
+
+df %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = Precision_slope)) +
+  geom_tile() + 
+  labs(title = "Precision in step in nsim = 100 (divided by effect size)", x = "Number of time points", 
+       y = "Number of participants", fill="SE") +
+  facet_wrap(~effect_sizes) +
+  scale_fill_viridis_c(option = "E") +
+    theme_minimal()
+```
+
 ```{r, echo=F, fig.height= 4, fig.width=6}
 v1 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_pre_slope)) +
@@ -244,12 +276,19 @@ set_scale_union(v2, v3, scale = scale_fill_viridis_c("Precision", option = "E"))
 
 
 v2
-#ggsave("figures/sPrecision_step.png")
+
+#ggsave("figures/10Precision_step.png")
+#ggsave("figures/01Precision_step.png")
+#ggsave("figures/11Precision_step.png")
 
 ggsave("figures/additional_step_Precision_step.png")
 
+
 v3
-#ggsave("figures/sPrecision_slope.png")
+
+#ggsave("figures/10Precision_slope.png")
+#ggsave("figures/01Precision_slope.png")
+#ggsave("figures/11Precision_slope.png")
 
 
 ggsave("figures/additional_step_Precision_slope.png")

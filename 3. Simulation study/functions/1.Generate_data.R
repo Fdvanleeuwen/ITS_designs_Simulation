@@ -10,6 +10,7 @@ forms_for_sim <- function(N_time, var, Intercept, Slope,step_size, slope_size, a
   }
   
   step_adjust <- slope_size*0.5
+  
   for (h in 1:(length(numbs)-1)){
     if (h < (N_time/2)){
       form[h] <- paste(v_name_final[h],"+", Slope)
@@ -45,7 +46,6 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time, addi
   dd <- genData(N_person, def)
   
   # generate noise 
-  
   M_noise<-matrix(rnorm(N_person*length(v_name), 0, var_time),nrow=N_person)
   
   dd[,2:(length(v_name))] = dd[,2:(length(v_name))]  + M_noise
@@ -66,13 +66,10 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time, addi
     treatment <- c(rep(0, treat_0), rep(1, treat_1), rep(2, treat_2))
   }
   
-  
-  
   dd_long <- dd_long %>%  
     mutate(treatment = as.factor(rep(treatment, N_person)),
            time = rep(seq(1,length(form)+1,1), N_person)-(length(form)+1)/2-0.5,
            score = value)
-  
   
   return(list(long = dd_long, wide = dd))
   

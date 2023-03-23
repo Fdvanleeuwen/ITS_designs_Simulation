@@ -5,28 +5,28 @@ run_OLS <- function(dd_long, additional_step_corr){
   
   # OLS regression
   M1 <- lm(score ~ time*treatment, data = dd_long) 
-
   # obtain coefficients
   if (additional_step_corr == 0){
-    beta_1 <- M1$coefficients[2]
-    beta_2 <- M1$coefficients[3]
-    beta_3 <- M1$coefficients[4] 
+    beta_1 <- summary(M1)$coefficients[2,1]
+    beta_2 <- summary(M1)$coefficients[3,1]
+    beta_3 <- summary(M1)$coefficients[4,1]
+    
     # Obtain the t-values
     t_value_pre_slope <- summary(M1)$coefficients[2,3]
     t_value_step_M1 <- summary(M1)$coefficients[3,3]
     t_value_slope_M1 <- summary(M1)$coefficients[4,3]
   }
-  else {
-      beta_1 <- M1$coefficients[2]
-      beta_2 <- M1$coefficients[3]
-      beta_3 <- M1$coefficients[5] 
+  else{
+      beta_1 <- summary(M1)$coefficients[2,1]
+      beta_2 <- summary(M1)$coefficients[3,1]
+      beta_3 <- summary(M1)$coefficients[5,1]
+      
       # Obtain the t-values
       t_value_pre_slope <- summary(M1)$coefficients[2,3]
       t_value_step_M1 <- summary(M1)$coefficients[3,3]
       t_value_slope_M1 <- summary(M1)$coefficients[5,3]
   }
 
-  
   if (abs(t_value_pre_slope) > 1.96){
     significant_pre_slope <- 1
   }
