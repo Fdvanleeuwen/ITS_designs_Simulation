@@ -27,7 +27,7 @@ The following parameters were used for the simulation study:
 * Number of simulations: 25
 * Intercept: 170
 * Variance of the intercept: N(0,25)
-* Slope: 33
+* Slope: 16.5
 * Variance added after data generation: N(0,20)
 * Effect sizes as % of the slope: 0.01, 0.025, 0.5, 0.10, 0.15, 0.30
 
@@ -87,17 +87,17 @@ The bias/precision was not estimated is the step/slope change was set to zero.
 
 ```{r}
 # import the data
-out10 <- read.csv("results/sim10_2.csv")
-out01 <- read.csv("results/sim01_2.csv")
-out11 <- read.csv("results/sim11_2.csv")
+out10 <- read.csv("results/sim10_3.csv")
+out01 <- read.csv("results/sim01_3.csv")
+out11 <- read.csv("results/sim11_3.csv")
 ```
 
 
 ```{r}
-out11_neg_step_2 <- read.csv("results/out11_neg_step_2.csv")
-out11_neg_slope_2 <- read.csv("results/out11_neg_slope_2.csv")
-out11_additional_step <- read.csv("results/out11_additional_step_2.csv")
-out11_additional_step_corr_2 <- read.csv("results/out11_additional_step_corr_2.csv")
+out11_neg_step <- read.csv("results/out11_neg_step_3.csv")
+out11_neg_slope  <- read.csv("results/out11_neg_slope_3.csv")
+out11_additional_step <- read.csv("results/out11_additional_step_3_csv")
+out11_additional_step_corr <- read.csv("results/out11_additional_step_corr_3.csv")
 ```
 
 ### Select scenario
@@ -107,7 +107,7 @@ df <- out11_additional_step
 
 
 #### Power
-```{r, fig.height= 4, fig.width=6}
+```{r}
 p1 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = pre_slope)) +
   geom_tile() + 
@@ -141,48 +141,26 @@ p2
 #ggsave("figures/10Power_step.png")
 #ggsave("figures/01Power_step.png")
 #ggsave("figures/11Power_step.png")
-#ggsave("figures/additional_step_Power_step.png")
+ggsave("figures/additional_step_Power_step.png")
 
 p3
 
 #ggsave("figures/10Power_slope.png")
 #ggsave("figures/01Power_slope.png")
 #ggsave("figures/11Power_slope.png")
-#ggsave("figures/additional_step_Power_slope.png")
-
-
+ggsave("figures/additional_step_Power_slope.png")
 ```
+
+
+
 #### Bias
-```{r}
-# heat maps
-df %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
-  geom_tile() + 
-  labs(title = "Percentage bias in pre slope", x = "Number of time points", 
-       y = "Number of participants", fill="Percentage bias") +
-  facet_wrap(~effect_sizes) +
-  scale_fill_viridis_c("Bias", option = "A") +
-    theme_minimal()
-
-#ggsave("figures/additional_step_Bias_step.png")
-
-df %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
-  geom_tile() + 
-  labs(title = "Percentage bias in step", x = "Number of time points", 
-       y = "Number of participants", fill="Percentage bias") +
-  facet_wrap(~effect_sizes) +
-  scale_fill_viridis_c("Bias", option = "A") +
-    theme_minimal()
-
-```
 
 ```{r, echo=F, fig.height= 4, fig.width=6}
 # heat maps
 b1 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = bias_pre_slope)) +
   geom_tile() + 
-  labs(title = "Percentage bias in pre slope", x = "Number of time points", 
+  labs(title = "Absolute bias in pre slope", x = "Number of time points", 
        y = "Number of participants", fill="Percentage bias") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
@@ -190,7 +168,7 @@ b1 <- df %>%
 b2 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = bias_step)) +
   geom_tile() + 
-  labs(title = "Percentage bias in step", x = "Number of time points", 
+  labs(title = "Absolute bias in step", x = "Number of time points", 
        y = "Number of participants", fill="Percentage bias") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
@@ -198,7 +176,7 @@ b2 <- df %>%
 b3 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = bias_slope)) +
   geom_tile() + 
-  labs(title = "Percentage bias in slope", x = "Number of time points", 
+  labs(title = "Absolute bias bias in slope", x = "Number of time points", 
        y = "Number of participants", fill="Percentage bias") +
   facet_wrap(~effect_sizes) +
   theme_minimal()
@@ -212,8 +190,6 @@ b2
 #ggsave("figures/10bias_step.png")
 #ggsave("figures/01bias_step.png")
 #ggsave("figures/11bias_step.png")
-
-
 ggsave("figures/additional_step_Bias_step.png")
 
 b3
@@ -221,31 +197,9 @@ b3
 #ggsave("figures/10bias_slope.png")
 #ggsave("figures/01bias_slope.png")
 #ggsave("figures/11bias_slope.png")
-
 ggsave("figures/additional_step_Bias_slope.png")
 ```
 #### Precison (SE)
-
-```{r}
-df %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = Precision_step)) +
-  geom_tile() + 
-  labs(title = "Precision in step in nsim = 100 (divided by effect size)", x = "Number of time points", 
-       y = "Number of participants", fill="SE") +
-  facet_wrap(~effect_sizes) +
-  scale_fill_viridis_c(option = "E") +
-    theme_minimal()
-
-df %>% 
-  ggplot(aes(x = N_t, y = N_pers, fill = Precision_slope)) +
-  geom_tile() + 
-  labs(title = "Precision in step in nsim = 100 (divided by effect size)", x = "Number of time points", 
-       y = "Number of participants", fill="SE") +
-  facet_wrap(~effect_sizes) +
-  scale_fill_viridis_c(option = "E") +
-    theme_minimal()
-```
-
 ```{r, echo=F, fig.height= 4, fig.width=6}
 v1 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_pre_slope)) +
@@ -280,7 +234,6 @@ v2
 #ggsave("figures/10Precision_step.png")
 #ggsave("figures/01Precision_step.png")
 #ggsave("figures/11Precision_step.png")
-
 ggsave("figures/additional_step_Precision_step.png")
 
 
@@ -289,15 +242,12 @@ v3
 #ggsave("figures/10Precision_slope.png")
 #ggsave("figures/01Precision_slope.png")
 #ggsave("figures/11Precision_slope.png")
-
-
 ggsave("figures/additional_step_Precision_slope.png")
 ```
 
 # set timepoints set and plot 
 ```{r}
 # set timepoints set at 8 and plot the difference of power per effect size
-
 power1 <- df %>% 
   filter(N_t == 8) %>% 
   ggplot(aes(x = N_pers,  colour = as.factor(effect_sizes))) +
