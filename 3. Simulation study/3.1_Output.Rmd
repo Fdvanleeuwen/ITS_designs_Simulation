@@ -32,18 +32,19 @@ source("functions/5.Chat_GPT_code.R")
 In this case formula's are generated for a case where we have 10 timepoints, with a staring intercept of 170 and a slope of 12.7. The change in intercept is added after the intervention which happens in the middle of the time series, the value here is 4. The change in slope is set to 4.
 
 ```{r}
-X <- forms_for_sim(N_time = 20, var = 10, Intercept = 170,  Slope = 33, step_size = -10, slope_size =  -10, additional_step = 0)
+X <- forms_for_sim(N_time = 10, var = 10, Intercept = 170,  Slope = 16.5, step_size = -5, slope_size =  -5, additional_step = 0)
 
 X
 ```
 
 ```{r, warning = F}
-test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 10, additional_step_corr = 0)
+test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 20, additional_step_corr = 0)
 
 # simpler model
 summary(lm(value ~time*treatment, test$long))
-summary(lm(value ~time*treatment, test$long))$coefficients[3,3]
-summary(lm(value ~time*treatment, test$long))$coefficients[3,1]
+
+summary(lm(value ~time*treatment + I(time^2), test$long))
+
 
 # inspect data
 test$long %>% 
@@ -52,15 +53,17 @@ test$long %>%
   geom_smooth(se = F, size = .5) +
   guides(color = FALSE)
 
-# simpler model
-lm(value ~time*treatment, test$long)
 
-test$long <- test$long %>% 
-  mutate(treatment2 = as.factor(rep(c(0,0,0,1,2,2),100)),
-        treatment3 = as.factor(rep(c(0,0,0,1,1,1),100)))
+#test$long <- test$long %>% 
+  #mutate(treatment2 = as.factor(rep(c(0,0,0,1,2,2),100)),
+        t#reatment3 = as.factor(rep(c(0,0,0,1,1,1),100)))
 
-lm(value ~time + treatment2 + time:treatment3 , test$long)
-lm(value ~time*treatment2 , test$long)
+#lm(value ~time + treatment2 + time:treatment3 , test$long)
+#lm(value ~time*treatment2 , test$long)
+        
+summary(lm(value ~time*treatment + I(time^2), test$long))
+        
+run_OLS(test$long, additional_step_corr = 0, time_2 = 1)
 ```
 
 ```{r}
@@ -76,7 +79,7 @@ In the output of the table we can see that person i has 10 scores. The column va
 # define input
 N_person <- c(100, 300, 500, 700, 900, 1100, 1300, 1500)
 N_time <- c(6, 8, 10, 12, 14, 16, 18, 20)
-N_sim <- 1
+N_sim <- 25
 var <- 25
 Intercept <- 170
 Slope <- 16.5
@@ -88,14 +91,14 @@ ES <- c(0.01, 0.025, 0.05, 0.10,0.15, 0.30)
 ```{r}
 # Basic setup
 startTime <- Sys.time()
-out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 0,additional_step = 0, additional_step_corr = 0,  model = "OLS")
+out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 0,additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 endTime <- Sys.time()
 
 print(endTime - startTime)
 
-out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, model = "OLS")
+out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 
-out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, model = "OLS")
+out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 ```
 
 ```{r}
@@ -107,9 +110,9 @@ write.csv(out11, "results/sim11_3.csv")
 
 ```{r}
 # One negative parameter
-out11_neg_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 1,additional_step = 0, additional_step_corr = 0,  model = "OLS")
+out11_neg_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 1,additional_step = 0, additional_step_corr = 0, time_2 = 0,  model = "OLS")
 
-out11_neg_slope <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = -1,additional_step = 0, additional_step_corr = 0,   model = "OLS")
+out11_neg_slope <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = -1,additional_step = 0, additional_step_corr = 0, time_2 = 0,   model = "OLS")
 ```
 
 ```{r}
@@ -119,9 +122,9 @@ write.csv(out11_neg_slope, "results/out11_neg_slope_3 .csv")
 ```
 
 ```{r}
-out11_additional_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 0, model = "OLS")
+out11_additional_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 0, time_2 = 0, model = "OLS")
 
-out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 1, model = "OLS")
+out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 1, time_2 = 0,  model = "OLS")
 ```
 
 ```{r}
@@ -133,19 +136,18 @@ write.csv(out11_additional_step_corr, "results/out11_additional_step_corr_3.csv"
 
 ```{r}
 # different effect sizes 
-out11_diff_effect <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -2, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, model = "OLS")
+out11_diff_effect <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -2, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 ```
 
 ```{r}
-# Basic setup
-startTime <- Sys.time()
-out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 0,additional_step = 0, additional_step_corr = 0,  model = "OLS")
-endTime <- Sys.time()
-print(endTime - startTime)
+# correcting for time^2 even tough it is not in the data
+time_2 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1,additional_step = 0, additional_step_corr = 0, time_2 = 1,  model = "OLS")
 
-startTime <- Sys.time()
-out10 <- sim_all_GPT(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 0,additional_step = 0, additional_step_corr = 0,  model = "OLS")
-endTime <- Sys.time()
-print(endTime - startTime)
 ```
+
+```{r}
+write.csv(time_2, "results/time_2.csv")
+```
+
+
 

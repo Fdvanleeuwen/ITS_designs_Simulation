@@ -98,11 +98,13 @@ out11_neg_step <- read.csv("results/out11_neg_step_3.csv")
 out11_neg_slope  <- read.csv("results/out11_neg_slope_3.csv")
 out11_additional_step <- read.csv("results/out11_additional_step_3_csv")
 out11_additional_step_corr <- read.csv("results/out11_additional_step_corr_3.csv")
+out_time_2 <- read.csv("results/time_2.csv")
+  
 ```
 
 ### Select scenario
 ```{r}
-df <- out11_additional_step
+df <- time_2
 ```
 
 
@@ -141,17 +143,17 @@ p2
 #ggsave("figures/10Power_step.png")
 #ggsave("figures/01Power_step.png")
 #ggsave("figures/11Power_step.png")
-ggsave("figures/additional_step_Power_step.png")
+#ggsave("figures/additional_step_Power_step.png")
+#ggsave("figures/Power_time_2_step.png")
 
 p3
 
 #ggsave("figures/10Power_slope.png")
 #ggsave("figures/01Power_slope.png")
 #ggsave("figures/11Power_slope.png")
-ggsave("figures/additional_step_Power_slope.png")
+#ggsave("figures/additional_step_Power_slope.png")
+#ggsave("figures/Power_time_2_slope.png")
 ```
-
-
 
 #### Bias
 
@@ -190,14 +192,16 @@ b2
 #ggsave("figures/10bias_step.png")
 #ggsave("figures/01bias_step.png")
 #ggsave("figures/11bias_step.png")
-ggsave("figures/additional_step_Bias_step.png")
+#ggsave("figures/additional_step_Bias_step.png")
+#ggsave("figures/Bias_time_2_step.png")
 
 b3
 
 #ggsave("figures/10bias_slope.png")
 #ggsave("figures/01bias_slope.png")
 #ggsave("figures/11bias_slope.png")
-ggsave("figures/additional_step_Bias_slope.png")
+#ggsave("figures/additional_step_Bias_slope.png")
+#ggsave("figures/Bias_time_2_slope.png")
 ```
 #### Precison (SE)
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -234,15 +238,16 @@ v2
 #ggsave("figures/10Precision_step.png")
 #ggsave("figures/01Precision_step.png")
 #ggsave("figures/11Precision_step.png")
-ggsave("figures/additional_step_Precision_step.png")
-
+#ggsave("figures/additional_step_Precision_step.png")
+#ggsave("figures/Precision_time_2_step.png")
 
 v3
 
 #ggsave("figures/10Precision_slope.png")
 #ggsave("figures/01Precision_slope.png")
 #ggsave("figures/11Precision_slope.png")
-ggsave("figures/additional_step_Precision_slope.png")
+#ggsave("figures/additional_step_Precision_slope.png")
+#ggsave("figures/Precision_time_2_slope.png")
 ```
 
 # set timepoints set and plot 
