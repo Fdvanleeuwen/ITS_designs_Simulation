@@ -87,24 +87,24 @@ The bias/precision was not estimated is the step/slope change was set to zero.
 
 ```{r}
 # import the data
-out10 <- read.csv("results/sim10_3.csv")
-out01 <- read.csv("results/sim01_3.csv")
+out10 <- read.csv("results/sim10_final.csv")
+out01 <- read.csv("results/sim01_final.csv")
 out11 <- read.csv("results/sim11_3.csv")
 ```
 
 
 ```{r}
-out11_neg_step <- read.csv("results/out11_neg_step_3.csv")
-out11_neg_slope  <- read.csv("results/out11_neg_slope_3.csv")
-out11_additional_step <- read.csv("results/out11_additional_step_3_csv")
-out11_additional_step_corr <- read.csv("results/out11_additional_step_corr_3.csv")
-out_time_2 <- read.csv("results/time_2.csv")
+out11_neg_step <- read.csv("results/out11_neg_step_final.csv")
+out11_neg_slope  <- read.csv("results/out11_neg_slope_final.csv")
+out11_additional_step <- read.csv("results/out11_additional_step_final_csv")
+out11_additional_step_corr <- read.csv("results/out11_additional_step_corr_final.csv")
+out_time_2 <- read.csv("results/time_2_final.csv")
   
 ```
 
 ### Select scenario
 ```{r}
-df <- time_2
+df <- out10
 ```
 
 
@@ -208,7 +208,7 @@ b3
 v1 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_pre_slope)) +
   geom_tile() + 
-  labs(title = "Precision in pre-slope in nsim = 100 (divided by effect size)", x = "Number of time points", 
+  labs(title = "Precision in pre-slope", x = "Number of time points", 
        y = "Number of participants", fill="SE") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
@@ -216,7 +216,7 @@ v1 <- df %>%
 v2 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_step)) +
   geom_tile() + 
-  labs(title = "Precision in step in nsim = 100 (divided by effect size)", x = "Number of time points", 
+  labs(title = "Precision in step", x = "Number of time points", 
        y = "Number of participants", fill="SE") +
   facet_wrap(~effect_sizes) +
     theme_minimal()
@@ -224,7 +224,7 @@ v2 <- df %>%
 v3 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_slope)) +
   geom_tile() + 
-  labs(title = "Precision in step in nsim = 100 (divided by effect size)", x = "Number of time points", 
+  labs(title = "Precision in step", x = "Number of time points", 
        y = "Number of participants", fill="SE") +
   facet_wrap(~effect_sizes) +
     theme_minimal()

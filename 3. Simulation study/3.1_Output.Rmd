@@ -79,7 +79,7 @@ In the output of the table we can see that person i has 10 scores. The column va
 # define input
 N_person <- c(100, 300, 500, 700, 900, 1100, 1300, 1500)
 N_time <- c(6, 8, 10, 12, 14, 16, 18, 20)
-N_sim <- 25
+N_sim <- 1000
 var <- 25
 Intercept <- 170
 Slope <- 16.5
@@ -95,18 +95,19 @@ out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time,
 endTime <- Sys.time()
 
 print(endTime - startTime)
+write.csv(out10, "results/sim10_final.csv")
+
 
 out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
+write.csv(out01, "results/sim01_final.csv")
 
 out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
+write.csv(out11, "results/sim11_final.csv")
+```
+```{r}
+out10
 ```
 
-```{r}
-# write away the results
-write.csv(out10, "results/sim10_3.csv")
-write.csv(out01, "results/sim01_3.csv")
-write.csv(out11, "results/sim11_3.csv")
-```
 
 ```{r}
 # One negative parameter
