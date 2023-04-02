@@ -16,6 +16,10 @@ library(segmented)
 ```
 
 ```{r}
+out01
+```
+
+```{r}
 source("functions/4.Set_scale_equal.R")
 ```
 
@@ -89,7 +93,7 @@ The bias/precision was not estimated is the step/slope change was set to zero.
 # import the data
 out10 <- read.csv("results/sim10_final.csv")
 out01 <- read.csv("results/sim01_final.csv")
-out11 <- read.csv("results/sim11_3.csv")
+out11 <- read.csv("results/sim11_final.csv")
 ```
 
 
@@ -102,9 +106,10 @@ out_time_2 <- read.csv("results/time_2_final.csv")
   
 ```
 
+
 ### Select scenario
 ```{r}
-df <- out10
+df <- out01
 ```
 
 

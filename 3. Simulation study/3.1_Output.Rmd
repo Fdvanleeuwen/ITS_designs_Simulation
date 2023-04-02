@@ -97,15 +97,13 @@ endTime <- Sys.time()
 print(endTime - startTime)
 write.csv(out10, "results/sim10_final.csv")
 
-
+```
+```{r}
 out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 write.csv(out01, "results/sim01_final.csv")
 
 out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 write.csv(out11, "results/sim11_final.csv")
-```
-```{r}
-out10
 ```
 
 
