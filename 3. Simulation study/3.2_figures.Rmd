@@ -109,7 +109,7 @@ out_time_2 <- read.csv("results/time_2_final.csv")
 
 ### Select scenario
 ```{r}
-df <- out01
+df <- out11_additional_step
 ```
 
 
@@ -236,10 +236,7 @@ v3 <- df %>%
 
 set_scale_union(v2, v3, scale = scale_fill_viridis_c("Precision", option = "E"))
 
-
-
 v2
-
 #ggsave("figures/10Precision_step.png")
 #ggsave("figures/01Precision_step.png")
 #ggsave("figures/11Precision_step.png")
