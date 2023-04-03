@@ -122,13 +122,13 @@ write.csv(out11_neg_slope, "results/out11_neg_slope_3 .csv")
 
 ```{r}
 out11_additional_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 0, time_2 = 0, model = "OLS")
+write.csv(out11_additional_step, "results/out11_additional_step_final.csv")
 
 out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 1, time_2 = 0,  model = "OLS")
 ```
 
 ```{r}
 # write away the results
-write.csv(out11_additional_step, "results/out11_additional_step_3.csv")
 write.csv(out11_additional_step_corr, "results/out11_additional_step_corr_3.csv")
 ```
 
@@ -141,11 +141,10 @@ out11_diff_effect <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, see
 ```{r}
 # correcting for time^2 even tough it is not in the data
 time_2 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1,additional_step = 0, additional_step_corr = 0, time_2 = 1,  model = "OLS")
-
 ```
 
 ```{r}
-write.csv(time_2, "results/time_2.csv")
+write.csv(time_2, "results/time2_final.csv")
 ```
 
 
