@@ -16,10 +16,6 @@ library(segmented)
 ```
 
 ```{r}
-out01
-```
-
-```{r}
 source("functions/4.Set_scale_equal.R")
 ```
 
@@ -103,13 +99,12 @@ out11_neg_slope  <- read.csv("results/out11_neg_slope_final.csv")
 out11_additional_step <- read.csv("results/out11_additional_step_final_csv")
 out11_additional_step_corr <- read.csv("results/out11_additional_step_corr_final.csv")
 out_time_2 <- read.csv("results/time_2_final.csv")
-  
 ```
 
 
 ### Select scenario
 ```{r}
-df <- out11_additional_step
+df <- out11_additional_step_corr
 ```
 
 
@@ -229,7 +224,7 @@ v2 <- df %>%
 v3 <- df %>% 
   ggplot(aes(x = N_t, y = N_pers, fill = Precision_slope)) +
   geom_tile() + 
-  labs(title = "Precision in step", x = "Number of time points", 
+  labs(title = "Precision in slope", x = "Number of time points", 
        y = "Number of participants", fill="SE") +
   facet_wrap(~effect_sizes) +
     theme_minimal()

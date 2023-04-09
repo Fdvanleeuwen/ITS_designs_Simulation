@@ -313,8 +313,6 @@ texreg(list(MLM_simple1, MLM_simple2),
           include.rsquared = FALSE, 
           include.adjrs = FALSE) 
           
-
-
 #plot original data
 plot(y = cohort_17_18_long$score, x = cohort_17_18_long$date, pch=16, col='steelblue')
 
