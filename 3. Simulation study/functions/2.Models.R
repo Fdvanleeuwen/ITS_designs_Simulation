@@ -4,8 +4,11 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
   #of the intervention dummy and the interaction between this dummy and time. 
   
   # OLS regression
-  if (time_2 == 0){
+  if (time_2 == 0 & additional_step_corr == 0){
     M1 <- lm(score ~ time*treatment, data = dd_long) 
+  }
+  else if (additional_step_corr == 1){
+    M1 <- lm(value ~ time + treatment + time:treatment2, dd_long)
   }
   else{
     M1 <- lm(value ~time*treatment + I(time^2), dd_long)
@@ -22,7 +25,20 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
     t_value_step_M1 <- summary(M1)$coefficients[3,3]
     t_value_slope_M1 <- summary(M1)$coefficients[4,3]
   }
-  else{
+  else if (additional_step_corr == 1){
+    beta_1 <- summary(M1)$coefficients[2,1]
+    beta_2 <- summary(M1)$coefficients[3,1]
+    beta_3 <- summary(M1)$coefficients[5,1]
+    beta_4 <- summary(M1)$coefficients[4,1]
+    
+    # Obtain the t-values
+    t_value_pre_slope <- summary(M1)$coefficients[2,3]
+    t_value_step_M1 <- summary(M1)$coefficients[3,3]
+    t_value_slope_M1 <- summary(M1)$coefficients[5,3]
+    t_value_step2_M1 <- summary(M1)$coefficients[4,3]
+  }
+  
+  else if (time_2 == 1){
       beta_1 <- summary(M1)$coefficients[2,1]
       beta_2 <- summary(M1)$coefficients[3,1]
       beta_3 <- summary(M1)$coefficients[5,1]
@@ -53,9 +69,17 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
     significant_slope <- 0
   }
   
+  if (abs(t_value_step2_M1) > 1.96){
+    significant_step2 <- 1
+  }
+  else{
+    significant_step2 <- 0
+  }
+  
+  
   return(list(significant_pre_slope = significant_pre_slope, significant_step = significant_step,
-              significant_slope = significant_slope, beta_1 = beta_1, beta_2 = beta_2,
-              beta_3 = beta_3))
+              significant_slope = significant_slope, significant_step2 = significant_step2, beta_1 = beta_1, beta_2 = beta_2,
+              beta_3 = beta_3, beta_4 = beta_4))
 }
 
 # run models 

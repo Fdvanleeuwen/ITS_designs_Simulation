@@ -123,13 +123,14 @@ write.csv(out11_neg_slope, "results/out11_neg_slope_3 .csv")
 ```{r}
 out11_additional_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 0, time_2 = 0, model = "OLS")
 write.csv(out11_additional_step, "results/out11_additional_step_final.csv")
-
-out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 1, time_2 = 0,  model = "OLS")
 ```
 
 ```{r}
+out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 1, time_2 = 0,  model = "OLS")
+
 # write away the results
-write.csv(out11_additional_step_corr, "results/out11_additional_step_corr_3.csv")
+write.csv(out11_additional_step_corr, "results/out11_additional_step_corr_final.csv")
+
 ```
 
 

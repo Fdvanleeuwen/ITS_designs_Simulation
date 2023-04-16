@@ -68,6 +68,7 @@ gen_data <- function(form, v_name, var_init, N_person, Intercept, var_time, addi
   
   dd_long <- dd_long %>%  
     mutate(treatment = as.factor(rep(treatment, N_person)),
+           treatment2 = as.factor(rep(c(rep(0,(length(form)+1)/2), rep(1,(length(form)+1)/2)), N_person)),
            time = rep(seq(1,length(form)+1,1), N_person)-(length(form)+1)/2-0.5,
            score = value)
   
