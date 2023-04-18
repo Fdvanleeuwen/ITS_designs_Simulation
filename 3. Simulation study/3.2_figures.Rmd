@@ -151,7 +151,7 @@ p2
 #ggsave("figures/11Power_step.png")
 #ggsave("figures/additional_step_Power_step.png")
 #ggsave("figures/Power_time_2_step.png")
-#ggsave("figures/out11_additional_step_corr.png")
+ggsave("figures/out11_additional_step_corr.png")
 
 p3
 
@@ -160,10 +160,10 @@ p3
 #ggsave("figures/11Power_slope.png")
 #ggsave("figures/additional_step_Power_slope.png")
 #ggsave("figures/Power_time_2_slope.png")
-#ggsave("figures/out11_additional_slope_corr.png")
+ggsave("figures/out11_additional_slope_corr.png")
 
 p4
-#ggsave("figures/out11_additional_step2_corr.png")
+ggsave("figures/out11_additional_step2_corr.png")
 ```
 
 #### Bias
@@ -213,7 +213,7 @@ b2
 #ggsave("figures/11bias_step.png")
 #ggsave("figures/additional_step_Bias_step.png")
 #ggsave("figures/Bias_time_2_step.png")
-#ggsave("figures/out11_additional_step_corr_bias.png")
+ggsave("figures/out11_additional_step_corr_bias.png")
 
 b3
 #ggsave("figures/out11_additional_slope_corr_bias.png")
@@ -221,10 +221,10 @@ b3
 #ggsave("figures/01bias_slope.png")
 #ggsave("figures/11bias_slope.png")
 #ggsave("figures/additional_step_Bias_slope.png")
-#ggsave("figures/Bias_time_2_slope.png")
+ggsave("figures/Bias_time_2_slope.png")
 
 b4
-#ggsave("figures/out11_additional_step2_corr_bias.png")
+ggsave("figures/out11_additional_step2_corr_bias.png")
 ```
 #### Precison (SE)
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -269,10 +269,10 @@ v2
 #ggsave("figures/11Precision_step.png")
 #ggsave("figures/additional_step_Precision_step.png")
 #ggsave("figures/Precision_time_2_step.png")
-#ggsave("figures/out11_additional_step_corr_precision.png")
+ggsave("figures/out11_additional_step_corr_precision.png")
 
 v3
-#ggsave("figures/out11_additional_slope_corr_precision.png")
+ggsave("figures/out11_additional_slope_corr_precision.png")
 
 #ggsave("figures/10Precision_slope.png")
 #ggsave("figures/01Precision_slope.png")
@@ -281,7 +281,7 @@ v3
 #ggsave("figures/Precision_time_2_slope.png")
 
 v4
-#ggsave("figures/out11_additional_step2_corr_precision.png")
+ggsave("figures/out11_additional_step2_corr_precision.png")
 ```
 
 # set timepoints set and plot 

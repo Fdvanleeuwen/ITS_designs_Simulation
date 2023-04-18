@@ -26,22 +26,24 @@ library(lavaan)
 source("functions/1.Generate_data.R")
 source("functions/2.Models.R")
 source("functions/3.sim_all.R")
-source("functions/5.Chat_GPT_code.R")
+#source("functions/5.Chat_GPT_code.R")
 ```
 
 In this case formula's are generated for a case where we have 10 timepoints, with a staring intercept of 170 and a slope of 12.7. The change in intercept is added after the intervention which happens in the middle of the time series, the value here is 4. The change in slope is set to 4.
 
 ```{r}
-X <- forms_for_sim(N_time = 10, var = 10, Intercept = 170,  Slope = 16.5, step_size = -5, slope_size =  -5, additional_step = 0)
+X <- forms_for_sim(N_time = 10, var = 10, Intercept = 170,  Slope = 16.5, step_size = -5, slope_size =  -5, additional_step = -2.5)
 
 X
 ```
 
 ```{r, warning = F}
-test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 20, additional_step_corr = 0)
+test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 20, additional_step_corr = 1)
+
 
 # simpler model
 summary(lm(value ~time*treatment, test$long))
+summary(lm(value ~time + treatment + time:treatment2, test$long))
 
 summary(lm(value ~time*treatment + I(time^2), test$long))
 
@@ -56,14 +58,14 @@ test$long %>%
 
 #test$long <- test$long %>% 
   #mutate(treatment2 = as.factor(rep(c(0,0,0,1,2,2),100)),
-        t#reatment3 = as.factor(rep(c(0,0,0,1,1,1),100)))
+        #treatment3 = as.factor(rep(c(0,0,0,1,1,1),100)))
 
 #lm(value ~time + treatment2 + time:treatment3 , test$long)
 #lm(value ~time*treatment2 , test$long)
         
 summary(lm(value ~time*treatment + I(time^2), test$long))
         
-run_OLS(test$long, additional_step_corr = 0, time_2 = 1)
+run_OLS(test$long, additional_step_corr = 1, time_2 = 0)
 ```
 
 ```{r}
@@ -127,10 +129,13 @@ write.csv(out11_additional_step, "results/out11_additional_step_final.csv")
 
 ```{r}
 out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 1, time_2 = 0,  model = "OLS")
+```
 
+```{r}
 # write away the results
 write.csv(out11_additional_step_corr, "results/out11_additional_step_corr_final.csv")
 
+out11_additional_step_corr
 ```
 
 
