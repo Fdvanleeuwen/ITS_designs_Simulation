@@ -1,0 +1,16 @@
+The output of this study can be entirely produced in R (4.2.2). The following packages are necessary:
+
+- openxlsx (4.2.5.2)
+- stringr (1.5.0)
+- tidyverse (2.0.0)
+- lme4 (1.1-31)
+- stargazer (5.2.3)
+- texreg (1.38.6)
+- xtable (1.8-4)  
+- lavaan (0.6-14)
+- haven (2.5.2)
+- dplyr (1.1.0)
+- tidyr (1.3.0)
+- ggplot2 (3.4.1)
+- patchwork (1.1.2)
+- segmented (1.6-2)

@@ -10,10 +10,3 @@ license (if applicable – always discuss this with your supervisors because you
 
 owner of the data/scripts);
 
-•	Ethics impact assessment (at least refer to the FETC, but you might want to add more details especially if you worked with empirical data);
-•	Provide information about privacy, like informed consent (if you collected data yourself) and methods of anonymization/pseudonymization (if you worked with empirical data);
-•	Security (if you worked with sensitive data).
-
-All this information can be copy-pasted from your FETC application. 
-
-
