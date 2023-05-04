@@ -59,12 +59,12 @@ data_eex %>%
   geom_segment(aes(x = 7.5, y = 6.75, xend = 10, yend = 8, color = "Two steps and slope")) +
   scale_color_discrete(name="Changing parameter") +
   labs(y = "Score", x = "Time") +
-  geom_vline(xintercept = 5.5) +
-  geom_vline(xintercept = 7.5, type = "-") +
+  geom_vline(xintercept = 5.5, linetype = "dashed") +
+  geom_vline(xintercept = 7.5, linetype = "dotted") +
   scale_x_continuous("Time", labels=c("T_0", "(N+1)/2","3(N+1)/4", "T_N"), breaks=c(1, 5.5, 7.5, 10)) +
   theme_minimal()
 
-ggsave("figures/sim_setup2.png")
+ggsave("figures/sim_setup2.png", width = 7, height = 5 )
 ```
 
 
@@ -110,7 +110,7 @@ out_neg_slope <- read.csv("results/out11_neg_slope_3.csv")
 
 ### Select scenario
 ```{r}
-df <- out11
+df <- out11_additional_step_corr
 ```
 
 
@@ -149,36 +149,36 @@ EV_size <- c(
                     `0.3` = "0.15"
                     )
 
-#p4 <- df %>% 
-  #ggplot(aes(x = N_t, y = N_pers, fill = step2)) +
-  #geom_tile() + 
-  #labs(x = "Number of time points",
-  #     y = "Number of participants", fill="Power") +
-  #facet_wrap(~effect_sizes, labeller = as_labeller(EV_size)) +
-  #theme_minimal() 
+p4 <- df %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = step2)) +
+  geom_tile() + 
+  labs(x = "Number of time points",
+       y = "Number of participants", fill="Power") +
+  facet_wrap(~effect_sizes, labeller = as_labeller(EV_size)) +
+  theme_minimal() 
 
-set_scale_union(p2, p3, scale = scale_fill_viridis_c("Power"))
+set_scale_union(p2, p3,p4, scale = scale_fill_viridis_c("Power"))
  
 
 p2
 #ggsave("figures/10Power_step.png")
 #ggsave("figures/01Power_step.png")
-ggsave("figures/11Power_step.png")
+#ggsave("figures/11Power_step.png")
 #ggsave("figures/additional_step_Power_step.png")
 #ggsave("figures/Power_time_2_step.png")
-#ggsave("figures/out11_additional_step_corr.png")
+ggsave("figures/out11_additional_step_corr.png")
 
 p3
 
 #ggsave("figures/10Power_slope.png")
 #ggsave("figures/01Power_slope.png")
-ggsave("figures/11Power_slope.png")
+#ggsave("figures/11Power_slope.png")
 #ggsave("figures/additional_step_Power_slope.png")
 #ggsave("figures/Power_time_2_slope.png")
-#ggsave("figures/out11_additional_slope_corr.png")
+ggsave("figures/out11_additional_slope_corr.png")
 
-#p4
-#ggsave("figures/out11_additional_step2_corr.png")
+p4
+ggsave("figures/out11_additional_step2_corr.png")
 
 ```
 
@@ -210,37 +210,36 @@ b3 <- df %>%
   facet_wrap(~effect_sizes) +
   theme_minimal()
 
-#b4 <- df %>% 
-  #ggplot(aes(x = N_t, y = N_pers, fill = bias_step2)) +
-  #geom_tile() + 
-  #labs(x = "Number of time points", 
-       #y = "Number of participants", fill="Percentage bias") +
-  #facet_wrap(~effect_sizes, labeller = as_labeller(EV_size)) +
-  #theme_minimal()
+b4 <- df %>% 
+  ggplot(aes(x = N_t, y = N_pers, fill = bias_step2)) +
+  geom_tile() + 
+  labs(x = "Number of time points", 
+       y = "Number of participants", fill="Percentage bias") +
+  facet_wrap(~effect_sizes, labeller = as_labeller(EV_size)) +
+  theme_minimal()
 
 
-set_scale_union(b2, b3, scale = scale_fill_viridis_c("Bias", option = "A"))
-
+set_scale_union(b2, b3, b4, scale = scale_fill_viridis_c("Bias", option = "A"))
 
 b2
 
 #ggsave("figures/10bias_step.png")
 #ggsave("figures/01bias_step.png")
-ggsave("figures/11bias_step.png")
+#ggsave("figures/11bias_step.png")
 #ggsave("figures/additional_step_Bias_step.png")
 #ggsave("figures/Bias_time_2_step.png")
-#ggsave("figures/out11_additional_step_corr_bias.png")
+ggsave("figures/out11_additional_step_corr_bias.png")
 
 b3
 #ggsave("figures/10bias_slope.png")
 #ggsave("figures/01bias_slope.png")
-ggsave("figures/11bias_slope.png")
+#ggsave("figures/11bias_slope.png")
 #ggsave("figures/additional_step_Bias_slope.png")
 #ggsave("figures/Bias_time_2_slope.png")
-#ggsave("figures/out11_additional_slope_corr_bias.png")
+ggsave("figures/out11_additional_slope_corr_bias.png")
 
-#b4
-#ggsave("figures/out11_additional_step2_corr_bias.png")
+b4
+ggsave("figures/out11_additional_step2_corr_bias.png")
 ```
 #### Precison (SE)
 ```{r, echo=F, fig.height= 4, fig.width=6}
@@ -277,27 +276,27 @@ v4 <- df %>%
     theme_minimal()
 
 
-set_scale_union(v2, v3, scale = scale_fill_viridis_c("Precision", option = "E"))
+set_scale_union(v2, v3, v4, scale = scale_fill_viridis_c("Precision", option = "E"))
 
 v2
 #ggsave("figures/10Precision_step.png")
 #ggsave("figures/01Precision_step.png")
-ggsave("figures/11Precision_step.png")
+#ggsave("figures/11Precision_step.png")
 #ggsave("figures/additional_step_Precision_step.png")
 #ggsave("figures/Precision_time_2_step.png")
-#ggsave("figures/out11_additional_step_corr_precision.png")
+ggsave("figures/out11_additional_step_corr_precision.png")
 
 v3
 
 #ggsave("figures/10Precision_slope.png")
 #ggsave("figures/01Precision_slope.png")
-ggsave("figures/11Precision_slope.png")
+#ggsave("figures/11Precision_slope.png")
 #ggsave("figures/additional_step_Precision_slope.png")
 #ggsave("figures/Precision_time_2_slope.png")
-#ggsave("figures/out11_additional_slope_corr_precision.png")
+ggsave("figures/out11_additional_slope_corr_precision.png")
 
-#v4
-#ggsave("figures/out11_additional_step2_corr_precision.png")
+v4
+ggsave("figures/out11_additional_step2_corr_precision.png")
 ```
 
 # set timepoints set and plot 

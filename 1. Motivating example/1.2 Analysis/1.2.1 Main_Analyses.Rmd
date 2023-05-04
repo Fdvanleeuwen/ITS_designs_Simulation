@@ -1,0 +1,121 @@
+---
+title: "Analysis of Cito data"
+author: "Florian van Leeuwen"
+output: html_document
+date: "2022-11-21"
+---
+
+# Preliminary results
+```{r, echo=FALSE}
+# libraries
+library(tidyverse)
+library(lme4)
+library(texreg)
+library(xtable)
+```
+
+## Load data
+```{r}
+# load data
+cohort_17_18_19_wide = read.csv2("cohort_17_18_19_wide.csv",sep=";",header=T)
+cohort_17_18_19_long = read.csv2("cohort_17_18_19_long.csv",sep=";",header=T)
+```
+
+```{r}
+# Correct the variable types
+cohort_17_18_19_long = cohort_17_18_19_long %>%
+  mutate(score = as.numeric(score),
+         time = as.numeric(time),
+         date = as.Date(date),
+         cohort = as.factor(cohort))
+
+cohort_17_18_19_wide = cohort_17_18_19_wide %>%
+  mutate(Score_M4 = as.numeric(Score_M4),
+         Score_E4 = as.numeric(Score_E4),
+         Score_M5 = as.numeric(Score_M5),
+         Score_E5 = as.numeric(Score_E5),
+         Score_M6 = as.numeric(Score_M6),
+         Score_E6 = as.numeric(Score_E6),
+         Score_M7 = as.numeric(Score_M7),
+         Score_E7 = as.numeric(Score_E7),)
+
+```
+
+## Inspect data
+
+```{r}
+# remove the missings
+cohort_17_18_19_long = cohort_17_18_19_long  %>%
+  filter(missing == 0) %>%
+  select(-missing)
+
+cohort_17_18_19_wide  = cohort_17_18_19_wide  %>%
+  drop_na()
+```
+
+## PLOTS
+```{r, warning=F}
+
+# trend for the some individual students from both cohorts
+cohort_17_18_19_long_sub1 <- cohort_17_18_19_long[0:304,]
+cohort_17_18_19_long_sub2 <- cohort_17_18_19_long[300001:300304,]
+cohort_17_18_19_long_sub = rbind(cohort_17_18_19_long_sub1,cohort_17_18_19_long_sub2 )
+
+cohort_17_18_19_long_sub  %>%
+  ggplot(aes(x = date, y = score, color = as.factor(id))) +
+  geom_point(alpha = .7, size = .4) +
+  geom_smooth(se = F, size = .5) +
+    guides(color = FALSE) +
+   geom_rect(aes(xmin = as.Date("2020-03-16", "%Y-%m-%d"), 
+                xmax = as.Date("2020-06-04",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.5) +
+    geom_rect(aes(xmin = as.Date("2020-12-18", "%Y-%m-%d"), 
+                xmax = as.Date("2021-01-31",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.5) +
+  facet_grid(rows = vars(cohort)) + 
+  labs(title = "Mathscore for individual students per cohort (grey area is lockdown)", y = "MathScore", x = "Year") +
+  theme_minimal()
+
+#ggsave("Figures/cito_two_cohorts.png")
+cohort_17_18_19_long_sub
+```
+
+
+# MODELS FOR OUTPUT 
+
+## ML MODELS
+```{r}
+MLM_out_1 <- lmer(score ~ 1 + time*corona + cohort + I(time^2)  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+MLM_out_2 <- lmer(score ~ 1 + time*corona +corona*cohort + time:corona:cohort + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_19_long)
+
+texreg(list(MLM_out_1, MLM_out_2),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Random intercept", "Interactions cohort"))
+          
+cohort_17_18_long = cohort_17_18_19_long %>%
+  filter(cohort == "17/18")
+  
+cohort_18_19_long = cohort_17_18_19_long %>%
+  filter(cohort == "18/19")
+  
+  
+MLM_simple1 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_simple2 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_18_19_long)
+
+texreg(list(MLM_simple1, MLM_simple2),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE) 
+```
+
+

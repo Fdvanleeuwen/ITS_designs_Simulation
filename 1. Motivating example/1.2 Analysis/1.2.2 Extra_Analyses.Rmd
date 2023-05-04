@@ -1,9 +1,14 @@
 ---
-title: "Analysis of Cito data"
+title: "1.2.2 Extra_analyses"
 author: "Florian van Leeuwen"
-output: html_document
-date: "2022-11-21"
+date: "2023-05-04"
+output: pdf_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 
 # Preliminary results
 ```{r, echo=FALSE}
@@ -71,7 +76,6 @@ cohort_17_18_19_wide  = cohort_17_18_19_wide  %>%
   drop_na()
 ```
 
-
 ```{r}
 # The observations for the first student in the long format
 head(cohort_17_18_19_long, 8)
@@ -79,8 +83,6 @@ head(cohort_17_18_19_long, 8)
 # And wide format
 head(cohort_17_18_19_wide, 1)
 ```
-
-
 
 ## PLOTS
 ```{r, warning=F}
@@ -137,7 +139,7 @@ cohort_17_18_19_long_sub  %>%
   labs(title = "Mathscore for individual students per cohort (grey area is lockdown)", y = "MathScore", x = "Year") +
   theme_minimal()
 
-#ggsave("cito_two_cohorts.png")
+#ggsave("Figures/cito_two_cohorts.png")
 cohort_17_18_19_long_sub
 ```
 
@@ -271,21 +273,6 @@ screenreg(list(MLM8, MLM9, MLM10, MLM11, MLM12, MLM13, MLM14, MLM15, MLM16, MLM1
 
 # MODEL FOR OUTPUT 
 
-## SEGMENTED REGRESSION
-```{r}
-SR_out_1 <- lm(score ~ 1 + time + cohort + I(time^2) + corona + time:corona, data = cohort_17_18_19_long)
-SR_out_2 <- lm(score ~ 1 + time*corona +corona*cohort + time:corona:cohort + I(time^2), data = cohort_17_18_19_long)
-
-texreg(list(SR_out_1, SR_out_2),
-          include.deviance = TRUE, 
-          include.rsquared = TRUE, 
-          include.adjrs = TRUE, 
-          custom.model.names = c("Segmented Regression", "Interactions cohort"))
-          
-AIC(SR_out_1)
-AIC(SR_out_2)
-```
-
 ## ML MODELS
 ```{r}
 MLM_out_1 <- lmer(score ~ 1 + time*corona + cohort + I(time^2)  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
@@ -298,15 +285,35 @@ texreg(list(MLM_out_1, MLM_out_2),
           include.adjrs = FALSE, 
           custom.model.names = c("Random intercept", "Interactions cohort"))
           
+cohort_17_18_long = cohort_17_18_19_long %>%
+  filter(cohort == "17/18")
+  
+cohort_18_19_long = cohort_17_18_19_long %>%
+  filter(cohort == "18/19")
+  
+  
+MLM_simple1 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_simple2 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_18_19_long)
+
+texreg(list(MLM_simple1, MLM_simple2),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE) 
 ```
+
+
 
 ## Figure of estimates
 ```{r}
 # make a new df with the meman values for the cohorts
-data_pred = data.frame(time = c(c(-2.13, -1.77, -1.14, -0.77, -0.13,  0.26,  0.99,  1.25), c(-1.13, -0.77, -0.14,  0.26,  0.99,  1.25,  1.89,  2.24)),
-                      corona = c(c(0,0,0,0,0,1,1,1),c(0,0,0,1,1,1,1,1)),
-                      cohort = as.factor(c(rep("17/18", 8),rep("18/19", 8))))
-                      
+
+newdata = data.frame(time = c(-2.13, -1.77, -1.14, -0.77, -0.13,  0.26,  0.99,  1.25),
+                      corona = c(0,0,0,0,0,1,1,1))
+
+newdata2 = data.frame(time = c(-1.13, -0.77, -0.14,  0.26,  0.99,  1.25,  1.89,  2.24),
+                      corona = c(0,0,0,1,1,1,1,1))
+
+
 # calucate the mean timepoint of a test                      
 data_date_17_18 = cohort_17_18_19_long  %>%
   drop_na() %>%
@@ -314,7 +321,7 @@ data_date_17_18 = cohort_17_18_19_long  %>%
   group_by(timepoint, cohort) %>%
   summarise(date = mean(date)) %>%
   arrange(date) 
-  
+
 data_date_18_19 = cohort_17_18_19_long  %>%
   drop_na() %>%
   filter(cohort == "18/19") %>%
@@ -323,12 +330,42 @@ data_date_18_19 = cohort_17_18_19_long  %>%
   arrange(date) 
 
 # predict new values
-pred = predict(SR_out_1, newdata =data_pred)   
+pred = predict(SR_out_1, newdata = newdata) 
+pred2 = predict(SR_out_2, newdata = newdata2) 
+pred
+data_date_17_18$date
 
+data_pred = data.frame(pred = c(pred, pred2))
+data_pred
 data_pred_all = data_pred %>%
   mutate(score = pred,
-        date = c(data_date_17_18$date, data_date_18_19$date)) 
+        date = c(data_date_17_18$date, data_date_18_19$date),
+        cohort = c(rep("17/18", 8),  rep("18/19", 8))) 
   
+
+  geom_point(data = data_pred_all[5,], col = 'blue') +
+
+data_pred_all %>%
+  ggplot(aes(x = date, y = score, color = cohort)) +
+  geom_point(alpha = .7, size = .4) +
+  geom_vline(xintercept = as.Date("2020-03-09", "%Y-%m-%d"), linetype="dashed", size=0.5) +
+    geom_segment(aes(x = as.Date("2019-11-22", "%Y-%m-%d"), y = 220, xend = as.Date("2020-02-25", "%Y-%m-%d"), yend = 231),
+                  arrow = arrow(length = unit(0.3, "cm")), color = "darkred") +
+  geom_segment(aes(x = as.Date("2018-01-28", "%Y-%m-%d"), y = 171.8377, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 234.32), color = "red") + 
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 229.43, xend = as.Date("2021-06-14", "%Y-%m-%d"), yend = 257.6201), color = "red") +
+  geom_segment(aes(x = as.Date("2019-01-26", "%Y-%m-%d"), y = 169.2427, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 210.25), color = "blue") + 
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 207, xend = as.Date("2022-06-10", "%Y-%m-%d"), yend = 257.6201), color = "blue") +
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 207, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 210.25), color = "darkblue", size = 1.3) +
+  geom_segment(aes(x = as.Date("2020-03-09", "%Y-%m-%d"), y = 229.43, xend = as.Date("2020-03-09", "%Y-%m-%d"), yend = 234.32), color = "darkred", size = 1.3) +
+  annotate("text", x= as.Date("2020-02-09", "%Y-%m-%d"), y=236.22, label= "B0") + 
+  annotate("text", x= as.Date("2019-03-09", "%Y-%m-%d"), y=212, label= "B1") + 
+  annotate("text", x= as.Date("2019-11-22", "%Y-%m-%d"), y=218, label= "B2") + 
+  annotate("text", x= as.Date("2020-09-09", "%Y-%m-%d"), y=248.22, label= "B1 + B3") + 
+  labs(title = "The predicted scores for both cohorts", x = "Date", y = "Score") +
+  scale_color_discrete(name = "Cohort") +
+  theme_minimal() 
+
+ggsave("Predictions.png")
 data_pred_all %>%
   ggplot(aes(x = date, y = score, color = cohort)) +
   geom_point(alpha = .7, size = .4) +
