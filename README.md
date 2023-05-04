@@ -1,9 +1,12 @@
-# This repo is made as part of the markup course.
+# This research archive contains all relevant information to reproduce the results in the study.
 
-The thesis project is about predicting interuped time series desgins with few time points.
+a brief introduction on the design of your study;
 
-The manuscript can be found under manuscript :)
+information about the data;
 
-For repliction start at the file numberd 1.1 and move your way up. 
+a step-by-step guide on how to run the scripts in which order (just like a recipe in a cookbook); 
 
-The part of the simulation study (3.) is still under construction. 
+license (if applicable – always discuss this with your supervisors because you might not be the owner of the data/scripts); Furthermore, all other information you think is needed to reproduce the results. 
+
+owner of the data/scripts);
+
