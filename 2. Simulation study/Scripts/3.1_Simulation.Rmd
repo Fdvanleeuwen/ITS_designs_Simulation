@@ -23,9 +23,9 @@ library(lavaan)
 
 ```{r}
 # Own functions
-source("functions/1.Generate_data.R")
-source("functions/2.Models.R")
-source("functions/3.sim_all.R")
+source("Functions/1.Generate_data.R")
+source("Functions/2.Models.R")
+source("Functions/3.sim_all.R")
 ```
 
 ## TEST THE FUNCTIONS

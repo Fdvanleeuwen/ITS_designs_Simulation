@@ -16,7 +16,7 @@ library(segmented)
 ```
 
 ```{r}
-source("functions/4.Set_scale_equal.R")
+source("Functions/4.Set_scale_equal.R")
 ```
 
 ## Visualisation of the simulattion scnearios
@@ -48,7 +48,7 @@ data_eex %>%
   scale_x_continuous("Time", labels=c("T_0", "(N+1)/2","3(N+1)/4", "T_N"), breaks=c(1, 5.5, 7.5, 10)) +
   theme_minimal()
 
-ggsave("Output/figures/sim_setup2.png", width = 7, height = 5 )
+ggsave("2. Simulation study/Output/figures/sim_setup2.png", width = 7, height = 5 )
 ```
 
 ## READ in the data

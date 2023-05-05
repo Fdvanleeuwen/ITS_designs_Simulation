@@ -1,8 +1,13 @@
 # This research archive contains all relevant information to reproduce the results in the study.
 
-a brief introduction on the design of your study;
+This study consists of two ports. The first part is an motivating example using data from CITO. The second part is a simulation study based on the results of the motivating example.
 
-information about the data;
+The data used in the motivating example is long ditudional data from CITO. The data is not avaiable to the public. Refer to the data text file for information on how to obtain the data.
+
+To reproduce the results of the motivating example, the code in the scripts folder needs to be run. First the rmd file in the 1.1 pre-processing folder can be run to transform the raw to data to the clean dataset with the necessary variables for a ITS design. Then the 1.2 Analysis folder should be used, the rmd file named 1.2.1 Main_analyses can be used to obtain the models presented in the study. File 1.2.2 can be used to see extra analysis which considered, but not included in the study.
+
+To reproduce the results of the simualtion study 
+
 
 a step-by-step guide on how to run the scripts in which order (just like a recipe in a cookbook); 
 
