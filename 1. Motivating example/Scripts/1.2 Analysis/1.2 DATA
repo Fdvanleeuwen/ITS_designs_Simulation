@@ -1,1 +1,1 @@
-EXPLAIN THE DATA THAT IS NEEDED
+The output of the 1.1 Data_Cleaning file should be used as input in 1.2.1 Main_Analyses and 1.2.2 Extra_Analyses. The name of the output files is cohort_17_18_19_wide.csv and cohort_17_18_19_long.csv.

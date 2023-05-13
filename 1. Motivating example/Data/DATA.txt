@@ -1,3 +1,9 @@
-The data for this study is sensetive and can not be put on Github. Contact CITO to obtain the data names LOVS. 
+The data for this study is sensitive and can not be put on Github. Contact CITO to obtain the data names LOVS. Contact Remco Feskens (remco.feskens@cito.nl) and request the following files:
 
-In that case, you should add a readme containing all steps I would need to take to obtain the data, including the contact information of the person I need to send a request to, all the information this person needs to locate your data on, for example, the CBS storage, and an overview of what should be part of the data (what columns, how many rows, etc.). 
+- LvsExport_20200418_0144_27.csv
+- LvsExport_20210930_0144_28.csv
+- LvsExport_20221024_0144_29.csv
+- LvsExport_20221024_0144_30.csv
+- LvsExport_20221024_0144_31.csv
+
+This is the LOVS data for the years 2017-2021.
