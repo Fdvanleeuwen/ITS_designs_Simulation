@@ -5,7 +5,6 @@ output: html_document
 date: "2022-11-21"
 ---
 
-# Preliminary results
 ```{r, echo=FALSE}
 # libraries
 library(tidyverse)
@@ -54,7 +53,6 @@ cohort_17_18_19_wide  = cohort_17_18_19_wide  %>%
 
 ## PLOTS
 ```{r, warning=F}
-
 # trend for the some individual students from both cohorts
 cohort_17_18_19_long_sub1 <- cohort_17_18_19_long[0:304,]
 cohort_17_18_19_long_sub2 <- cohort_17_18_19_long[300001:300304,]
@@ -84,7 +82,6 @@ cohort_17_18_19_long_sub  %>%
   theme_minimal()
 
 #ggsave("Figures/cito_two_cohorts.png")
-cohort_17_18_19_long_sub
 ```
 
 
