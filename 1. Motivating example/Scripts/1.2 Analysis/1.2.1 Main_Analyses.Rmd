@@ -42,7 +42,6 @@ cohort_17_18_19_wide = cohort_17_18_19_wide %>%
 ```
 
 ## Inspect data
-
 ```{r}
 # remove the missings
 cohort_17_18_19_long = cohort_17_18_19_long  %>%
@@ -92,30 +91,42 @@ cohort_17_18_19_long_sub
 # MODELS FOR OUTPUT 
 
 ## ML MODELS
-```{r}
-MLM_out_1 <- lmer(score ~ 1 + time*corona + cohort + I(time^2)  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
-MLM_out_2 <- lmer(score ~ 1 + time*corona +corona*cohort + time:corona:cohort + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_19_long)
 
-texreg(list(MLM_out_1, MLM_out_2),
-          include.deviance = TRUE, 
-          include.rsquared = FALSE, 
-          include.adjrs = FALSE, 
-          custom.model.names = c("Random intercept", "Interactions cohort"))
-          
+```{r}
+# create dataframe per cohort
 cohort_17_18_long = cohort_17_18_19_long %>%
   filter(cohort == "17/18")
   
 cohort_18_19_long = cohort_17_18_19_long %>%
   filter(cohort == "18/19")
-  
-  
-MLM_simple1 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_17_18_long)
-MLM_simple2 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_18_19_long)
+```
 
-texreg(list(MLM_simple1, MLM_simple2),
+```{r}
+# Run 4 Multilevel models: standard ITS design, second intervention dummy added, time^2 added, both added
+MLM_out_1 <- lmer(score ~ 1 + time*corona  +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_out_2 <- lmer(score ~ 1 + time*corona + corona2 +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_out_3 <- lmer(score ~ 1 + time*corona + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_out_4 <- lmer(score ~ 1 + time*corona + corona2 + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_long)
+
+# output of the models in latex
+texreg(list(MLM_out_1, MLM_out_2, MLM_out_3, MLM_out_4),
           include.deviance = TRUE, 
           include.rsquared = FALSE, 
-          include.adjrs = FALSE) 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Basic", "Second Inter", "time^2", "Both"))
+          
+# Run 4 Multilevel models: standard ITS design, second intervention dummy added, time^2 added, both added
+MLM_out_1c <- lmer(score ~ 1 + time*corona  +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_2c <- lmer(score ~ 1 + time*corona + corona2 +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_3c <- lmer(score ~ 1 + time*corona + I(time^2) +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_4c <- lmer(score ~ 1 + time*corona + corona2 + I(time^2) +(1|id), REML = FALSE, data = cohort_18_19_long)
+
+# output of the models in latex
+texreg(list(MLM_out_1c, MLM_out_2c, MLM_out_3c, MLM_out_4c),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Basic", "Second Inter", "time^2", "Both"))
 ```
 
 

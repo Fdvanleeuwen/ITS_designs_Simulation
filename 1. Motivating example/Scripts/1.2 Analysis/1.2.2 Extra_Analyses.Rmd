@@ -5,12 +5,7 @@ date: "2023-05-04"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-
-# Preliminary results
 ```{r, echo=FALSE}
 # libraries
 library(tidyverse)
@@ -45,7 +40,6 @@ cohort_17_18_19_wide = cohort_17_18_19_wide %>%
          Score_E6 = as.numeric(Score_E6),
          Score_M7 = as.numeric(Score_M7),
          Score_E7 = as.numeric(Score_E7),)
-
 ```
 
 ## Inspect data
@@ -56,15 +50,6 @@ table(cohort_17_18_19_long$missing)
 # look a missings per timepoint
 summary(cohort_17_18_19_wide)
 ```
-The long and wide datasets consist of all data for the cohorts starting in 2017 and 2018. \
-
-The data has a dummy indicating if a student has at least one data point missing. It seems that around 2/3 of students have at least one data point missing. The missings and any dupliucates will be deleted for now. \
-
-There is also a corona dummy which is 0,0,0,0,0,1,1,1 for students of the 2017 cohort and 0,0,0,1,1,1,1,1 for the students of the 2018 cohort. \
-
-The dummy for time is not 0/1/.../7 anymore. I changed it reflect that there are differences in the intervals between tests. The difference between tests in the same grade is on average 0.36 years, and between years 0.64. So the time variable no goes like this: 0/.36/1/1.36/2/2.36/3/3.36. *I would like to hear your though on the new time variable.* \
-
-Now on second thought I think it makes a lot more sense to center time to the when the first lock down occurred, which is 2020-03-16. So that is what I did. 
 
 ```{r}
 # remove the missings
@@ -116,9 +101,12 @@ cohort_17_18_19_long_sub1 <- cohort_17_18_19_long[0:304,]
 cohort_17_18_19_long_sub2 <- cohort_17_18_19_long[300001:300304,]
 cohort_17_18_19_long_sub = rbind(cohort_17_18_19_long_sub1,cohort_17_18_19_long_sub2 )
 
+CH <- c('17/18' = "A",
+        '18/19' = "B")
+
 cohort_17_18_19_long_sub  %>%
   ggplot(aes(x = date, y = score, color = as.factor(id))) +
-  geom_point(alpha = .7, size = .4) +
+  geom_point(alpha = .7, size = 1) +
   geom_smooth(se = F, size = .5) +
     guides(color = FALSE) +
    geom_rect(aes(xmin = as.Date("2020-03-16", "%Y-%m-%d"), 
@@ -135,12 +123,12 @@ cohort_17_18_19_long_sub  %>%
             fill = "gray",
             color = "black",
             alpha = 0.5) +
-  facet_grid(rows = vars(cohort)) + 
-  labs(title = "Mathscore for individual students per cohort (grey area is lockdown)", y = "MathScore", x = "Year") +
+  facet_grid(rows = vars(cohort), labeller = as_labeller(CH)) + 
+  labs(y = "MathScore", x = "Year") +
   theme_minimal()
 
-#ggsave("Figures/cito_two_cohorts.png")
-cohort_17_18_19_long_sub
+ggsave("cito_two_cohorts2.png", width = 7, height = 5)
+cdcohort_17_18_19_long_sub
 ```
 
 ```
@@ -148,7 +136,6 @@ cohort_17_18_19_long_sub
 The plots show the general trend for two cohorts. I filtered out all missing values in the first plot and students with missing values in the second plot. 
 
 ## Analysis
-For the analysis I used the data for two cohorts for the linear regression and the ML model, but no for the LGM because I don't know how this would work. I will only use the data from 1 cohort now, since I find the interpretation else very unintuitive.  \
 
 ```{r}
 cohort_17_18_long = cohort_17_18_19_long %>%
@@ -159,7 +146,7 @@ cohort_17_18_long = cohort_17_18_19_long %>%
 ### Linear regression
 ```{r, warning=F}
 # simple models
-LR1 = lm(score ~ time, data = cohort_17_18_long)
+LR1 = lm(score ~ time, data = cohort_17_18_19_long)
 LR2 = lm(score ~ time + corona, data = cohort_17_18_long)
 LR3 = lm(score ~ time*corona , data = cohort_17_18_long)
 
@@ -273,35 +260,72 @@ screenreg(list(MLM8, MLM9, MLM10, MLM11, MLM12, MLM13, MLM14, MLM15, MLM16, MLM1
 
 # MODEL FOR OUTPUT 
 
+## SEGMENTED REGRESSION
+```{r}
+SR_out_1 <- lm(score ~ time*corona, data = cohort_17_18_long)
+SR_out_2 <- lm(score ~ time*corona, data = cohort_18_19_long)
+
+texreg(list(SR_out_1, SR_out_2),
+          include.deviance = TRUE, 
+          include.rsquared = TRUE, 
+          include.adjrs = TRUE, 
+          custom.model.names = c("Segmented Regression", "Interactions cohort"))
+          
+AIC(SR_out_1)
+AIC(SR_out_2)
+```
+
 ## ML MODELS
 ```{r}
-MLM_out_1 <- lmer(score ~ 1 + time*corona + cohort + I(time^2)  +(1|id), REML = FALSE, data = cohort_17_18_19_long)
-MLM_out_2 <- lmer(score ~ 1 + time*corona +corona*cohort + time:corona:cohort + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_19_long)
-
-
-texreg(list(MLM_out_1, MLM_out_2),
-          include.deviance = TRUE, 
-          include.rsquared = FALSE, 
-          include.adjrs = FALSE, 
-          custom.model.names = c("Random intercept", "Interactions cohort"))
-          
 cohort_17_18_long = cohort_17_18_19_long %>%
   filter(cohort == "17/18")
   
 cohort_18_19_long = cohort_17_18_19_long %>%
   filter(cohort == "18/19")
-  
-  
-MLM_simple1 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_17_18_long)
-MLM_simple2 <- lmer(score ~ 1 + time*corona +(1|id), REML = FALSE, data = cohort_18_19_long)
 
-texreg(list(MLM_simple1, MLM_simple2),
+
+MLM_out_1 <- lmer(score ~ 1 + time*corona  +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_out_2 <- lmer(score ~ 1 + time*corona + corona2 +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_out_3 <- lmer(score ~ 1 + time*corona + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_long)
+MLM_out_4 <- lmer(score ~ 1 + time*corona + corona2 + I(time^2) +(1|id), REML = FALSE, data = cohort_17_18_long)
+
+texreg(list(MLM_out_1, MLM_out_2, MLM_out_3, MLM_out_4),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Basic", "Second Inter", "time^2", "Both"))
+          
+          
+MLM_out_1c <- lmer(score ~ 1 + time*corona  +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_2c <- lmer(score ~ 1 + time*corona + corona2 +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_3c <- lmer(score ~ 1 + time*corona + I(time^2) +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_4c <- lmer(score ~ 1 + time*corona + corona2 + I(time^2) +(1|id), REML = FALSE, data = cohort_18_19_long)
+
+texreg(list(MLM_out_1c, MLM_out_2c, MLM_out_3c, MLM_out_4c),
+          include.deviance = TRUE, 
+          include.rsquared = FALSE, 
+          include.adjrs = FALSE, 
+          custom.model.names = c("Basic", "Second Inter", "time^2", "Both"))
+        
+  
+  
+MLM_out_1C <- lmer(score ~ 1 + time*corona  +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_2C <- lmer(score ~ 1 + time + corona2 + time:corona +(1|id), REML = FALSE, data = cohort_18_19_long)
+MLM_out_3C <- lmer(score ~ 1 + time + corona2 + time:corona + I(time^2) +(1|id), REML = FALSE, data = cohort_18_19_long)
+
+texreg(list(MLM_out_1C, MLM_out_2C, MLM_out_3C),
           include.deviance = TRUE, 
           include.rsquared = FALSE, 
           include.adjrs = FALSE) 
+          
+
+
+#plot original data
+plot(y = cohort_17_18_long$score, x = cohort_17_18_long$date, pch=16, col='steelblue')
+
+#add segmented regression model
+plot(segmented.fit, add=T)
 ```
-
-
 
 ## Figure of estimates
 ```{r}
@@ -332,18 +356,15 @@ data_date_18_19 = cohort_17_18_19_long  %>%
 # predict new values
 pred = predict(SR_out_1, newdata = newdata) 
 pred2 = predict(SR_out_2, newdata = newdata2) 
-pred
-data_date_17_18$date
 
 data_pred = data.frame(pred = c(pred, pred2))
-data_pred
+
 data_pred_all = data_pred %>%
   mutate(score = pred,
         date = c(data_date_17_18$date, data_date_18_19$date),
         cohort = c(rep("17/18", 8),  rep("18/19", 8))) 
   
 
-  geom_point(data = data_pred_all[5,], col = 'blue') +
 
 data_pred_all %>%
   ggplot(aes(x = date, y = score, color = cohort)) +
@@ -362,6 +383,20 @@ data_pred_all %>%
   annotate("text", x= as.Date("2019-11-22", "%Y-%m-%d"), y=218, label= "B2") + 
   annotate("text", x= as.Date("2020-09-09", "%Y-%m-%d"), y=248.22, label= "B1 + B3") + 
   labs(title = "The predicted scores for both cohorts", x = "Date", y = "Score") +
+     geom_rect(aes(xmin = as.Date("2020-03-16", "%Y-%m-%d"), 
+                xmax = as.Date("2020-06-04",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.1) +
+    geom_rect(aes(xmin = as.Date("2020-12-18", "%Y-%m-%d"), 
+                xmax = as.Date("2021-01-31",  "%Y-%m-%d"),
+                ymin = -Inf, 
+                ymax = Inf),
+            fill = "gray",
+            color = "black",
+            alpha = 0.1) +
   scale_color_discrete(name = "Cohort") +
   theme_minimal() 
 
@@ -405,7 +440,6 @@ cohort_17_18_19_long  %>%
   geom_smooth(aes(x = t, y = y, c = c), method = "lm", formula = y ~ x + c)
 ```
 
-
 # Latent growth curve model
 ```{r}
 # filter data to one cohort since I am not sure how to specify the factor loadings for the piecewise LGM otherwise
@@ -438,7 +472,6 @@ summary(GCM2_fit, standardized = TRUE)
 ```
 The estimates  of the intercept is 228.5 (708) and the slope are a bit higher than in the LGM. The change in intercept is -3.4, which is rather small to the change in slope of 5. But there is no quadratic term in this model, which could account for some of the slope change. 
 
-NO OUPUT AFTER THIS. 
 ```{r}
 # piecewise latent growth curve model with errors between and within free
 GCM3  <- "i =~ 1*Score_M4 + 1*Score_E4 + 1*Score_M5 + 1*Score_E5 + 1*Score_M6 + 1*Score_E6 + 1*Score_M7 + 1*Score_E7

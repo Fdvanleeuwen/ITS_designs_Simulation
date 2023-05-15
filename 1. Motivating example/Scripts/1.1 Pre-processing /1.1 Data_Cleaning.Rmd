@@ -8,6 +8,10 @@ date: "2022-11-10"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ```{r}
 # install.packages("X", repos = 'https://cloud.r-project.org')
 library(openxlsx)
@@ -25,7 +29,7 @@ RW31 = read.csv2("Data/LvsExport_20221024_0144_31.csv",sep=";",header=T)
 ```
 
 ```{r}
-# make uniwue id's for students
+# make unique id's for students
 RW27$leerling = str_c(RW27$sch_brincode,RW27$lrl_nr,sep="_") 
 RW28$leerling = str_c(RW28$sch_brincode,RW28$lrl_nr,sep="_")
 RW29$leerling = str_c(RW29$sch_brincode,RW29$lrl_nr,sep="_")
@@ -61,6 +65,7 @@ RW31_E7 = subset(RW31, RW31$afn_code_berekend=="E7")
 all_data = list(RW27_M4, RW27_E4, RW28_M4, RW28_E4, RW28_M5, RW28_E5, RW29_M5, RW29_E5,  RW29_M6, RW29_E6, RW30_M6, RW30_E6,RW30_M7, RW30_E7, RW31_M7, RW31_E7 )
 all_data_clean = list()
 
+# Change the names, and create variables for day, month and year
 for (i in 1:length(all_data)){
   data = all_data[[i]] 
   data_clean = data %>%
@@ -101,6 +106,7 @@ RW31_E7 = all_data_clean[[16]]
 ```
 
 ```{r}
+# combine the data
 cohort_17_18 = left_join(RW27_M4, RW27_E4, by=c('id', 'school_id')) %>%
       left_join(., RW28_M5, c('id', 'school_id')) %>%
       left_join(., RW28_E5, c('id', 'school_id')) %>%
@@ -205,7 +211,6 @@ time_cohort_18_19 = c(-1.13, -0.77, -0.14,  0.26,  0.99,  1.25,  1.89,  2.24)
 ```
 
 ```{r}
-
 #  Make it a long formate and add corona dummy and time variable for cohort 17/18
 cohort_17_18_long = cohort_17_18_wide %>% pivot_longer(c(Score_M4, Score_E4, Score_M5,
          Score_E5, Score_M6, Score_E6, Score_M7, Score_E7),
@@ -220,8 +225,9 @@ cohort_17_18_long = cohort_17_18_wide %>% pivot_longer(c(Score_M4, Score_E4, Sco
                           timepoint == "Score_M7" ~ Date_M7,
                           timepoint == "Score_E7" ~ Date_E7),
           time = rep(time_cohort_17_18, nrow(cohort_17_18_wide)),
-         corona =  rep(c(0,0,0,0,0,1,1,1),nrow(cohort_17_18_wide)))  %>% 
-  select(id, school_id, score, time, corona, timepoint, date, cohort)
+         corona =  rep(c(0,0,0,0,0,1,1,1),nrow(cohort_17_18_wide)),
+         corona2 =  rep(c(0,0,0,0,0,0,1,1),nrow(cohort_17_18_wide)))  %>% 
+  select(id, school_id, score, time, corona, timepoint, date, cohort, corona2)
 
 #  Make it a long formate and add corona dummy and time variable 18/19
 cohort_18_19_long = cohort_18_19_wide %>% pivot_longer(c(Score_M4, Score_E4, Score_M5,
@@ -237,13 +243,13 @@ cohort_18_19_long = cohort_18_19_wide %>% pivot_longer(c(Score_M4, Score_E4, Sco
                           timepoint == "Score_M7" ~ Date_M7,
                           timepoint == "Score_E7" ~ Date_E7),
           time = rep(time_cohort_18_19, nrow(cohort_18_19_wide)),
-         corona =  rep(c(0,0,0,1,1,1,1,1),nrow(cohort_18_19_wide)))  %>% 
-  select(id, school_id, score, time, corona, timepoint, date, cohort)
+         corona =  rep(c(0,0,0,1,1,1,1,1),nrow(cohort_18_19_wide)),
+         corona2 =  rep(c(0,0,0,0,1,1,1,1),nrow(cohort_18_19_wide)))  %>% 
+  select(id, school_id, score, time, corona, timepoint, date, cohort, corona2)
 ```
 
 ```{r}
 # missings indicator for the long data set
-
 cohort_18_19_long$missing <- 0
 
 for (i in seq(1,nrow(cohort_18_19_long), 8)){
@@ -283,8 +289,4 @@ write.table(cohort_17_18_19_wide,"cohort_17_18_19_wide.csv",sep=";",quote=F,row.
 write.table(cohort_17_18_19_long,"cohort_17_18_19_long.csv",sep=";",quote=F,row.names=F,col.names=T)
 ```
 
-```{r}
-sum(table(RW27_M4$leerling))
-sum(table(RW27_M4$leerling)-1)
-```
 
