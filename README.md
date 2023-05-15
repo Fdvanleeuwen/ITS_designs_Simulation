@@ -13,5 +13,8 @@ Furthermore, The study is approved by the Ethical Review Board of the Faculty of
 ## Technical Requirements
 The technical requirements can be found in the Requirements.txt file. 
 
+## License
+This repository is accessible to the public on GitHub under the license type of GNU General Public License v3.0.
+
 ## Contact
-The maintenance and public accessibility of this repository are managed by Alex Carriero. If you have any questions please feel free to contact me via email: f.dammesvanleeuwen@gmail.com.
+The maintenance and public accessibility of this repository are managed by Florian van leeuwen. If you have any questions please feel free to contact me via email: f.dammesvanleeuwen@gmail.com.
