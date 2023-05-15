@@ -1,10 +1,10 @@
 # This research archive contains all relevant information to reproduce the results of the study.
 This study with the title *The performance of interrupted time series designs with a limited number of time points: Learning losses due to school closures during the COVID pandemic* consists of two ports. The first part is a motivating example using data from CITO. The second part is a simulation study based on the results of the motivating example. The full manuscript can be found in the Manuscript folder.
 
-## Motivating example
+## 1. Motivating example
 The data used in the motivating example stems from CITO. The data is not available to the public. Refer to the data text file for information on how to obtain the data. To reproduce the results of the motivating example, the code in the scripts folder needs to be run. First, the rmd file in the *1.1 pre-processing* folder can be run to transform the raw data into a clean dataset with the necessary variables for an ITS design. Then the *1.2 Analysis* folder should be used, and the rmd file named *1.2.1 Main_analyses* can be used to obtain the models presented in the study. *File 1.2.2* can be used to see extra analysis which considered, but not included in the study.
 
-## Simulation study
+## 2. Simulation study
 To reproduce the results of the simulation study the code *2.1_Simulation* file should be run. The parameters used in the studies are given in the file and can be adjusted if need be. The functions behind the simulation study can be found in the Functions folder. The output of this code will be saved in the output folder (results). The *2.2_Visualisation* can then be used to use visualize the results. The figures can be created per simulation scenario.  
 
 ## Ethical approval
