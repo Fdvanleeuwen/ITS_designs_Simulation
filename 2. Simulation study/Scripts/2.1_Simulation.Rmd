@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, echo = F, warning =F}
+# Libraries used
 library(haven)
 library(dplyr)
 library(xtable)
@@ -30,11 +31,13 @@ source("Functions/3.sim_all.R")
 
 ## TEST THE FUNCTIONS
 ```{r}
+# Inspect the output of the fuction that forms the regression formula's
 X <- forms_for_sim(N_time = 4, var = 10, Intercept = 170,  Slope = 16.5, step_size = 20, slope_size =  -10, additional_step = 0)
 X
 ```
 
 ```{r, warning = F}
+# Inspect the output of the data generating function
 test <- gen_data(X$form, X$v_name, X$var, N_person = 100, X$Intercept, var_time = 0, additional_step_corr = 0)
 
 # inspect data
@@ -45,12 +48,7 @@ test$long %>%
   guides(color = FALSE)
 ```
 
-```{r}
-# check function for all Effect tizes
-ES <- c(0.01, 0.025, 0.05, 0.10,0.15, 0.30)
-All_conditions(ES, 12.7)
-All_conditions(ES, 33)
-```
+# RUN THE DIFFERENT SCENARIO'S
 
 ## PARAMETERS SIMULATION STUDY
 ```{r}
@@ -65,11 +63,11 @@ var_time <- 25
 ES <- c(0.01, 0.025, 0.05, 0.10, 0.15, 0.30)
 ```
 
-# RUN THE DIFFERENT SCENARIO'S
 
 ## Step and slope change (section 5.1)
 ```{r}
 set.seed(123)
+
 out11 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 
 write.csv(out11, "Output/results/sim11_final.csv")
@@ -79,7 +77,7 @@ write.csv(out11, "Output/results/sim11_final.csv")
 ## Only step change (section 5.2)
 ```{r}
 set.seed(123)
-# Basic setup
+
 startTime <- Sys.time()
 out10 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 0,additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 endTime <- Sys.time()
@@ -91,6 +89,7 @@ write.csv(out10, "Output/results/sim10_final.csv")
 ## Only slope change (section 5.2)
 ```{r}
 set.seed(123)
+
 out01 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 0, treatment_slope = -1, additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
 
 write.csv(out01, "Output/results/sim01_final.csv")
@@ -99,6 +98,7 @@ write.csv(out01, "Output/results/sim01_final.csv")
 ## Step and slope change and additional step change (section 5.3)
 ```{r}
 set.seed(123)
+
 out11_additional_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 0, time_2 = 0, model = "OLS")
 
 write.csv(out11_additional_step, "Output/results/out11_additional_step_final.csv")
@@ -107,6 +107,7 @@ write.csv(out11_additional_step, "Output/results/out11_additional_step_final.csv
 ## Step and slope change and additional step change with correction (section 5.4)
 ```{r}
 set.seed(123)
+
 out11_additional_step_corr <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1, additional_step = 1, additional_step_corr = 1, time_2 = 0,  model = "OLS")
 
 # write away the results
@@ -115,7 +116,6 @@ write.csv(out11_additional_step_corr, "Output/results/out11_additional_step_corr
 
 ## Step and slope change with correction for a changing slope (section 5.5)
 ```{r}
-# correcting for time^2 even tough it is not in the data
 time_2 <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = -1,additional_step = 0, additional_step_corr = 0, time_2 = 1,  model = "OLS")
 
 write.csv(time_2, "Output/results/time2_final.csv")
@@ -130,7 +130,7 @@ out11_diff_effect <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, see
 
 ```{r}
 set.seed(123)
-# One negative parameter
+# Negative step change
 out11_neg_step <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = -1, treatment_slope = 1,additional_step = 0, additional_step_corr = 0, time_2 = 0,  model = "OLS")
 
 write.csv(out11_neg_step, "Output/results/out11_neg_step_3.csv")
@@ -139,7 +139,8 @@ write.csv(out11_neg_step, "Output/results/out11_neg_step_3.csv")
 ```{r}
 set.seed(123)
 
+# Negative slope change
 out11_neg_slope <- sim_all(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, ES, treatment_step = 1, treatment_slope = -1,additional_step = 0, additional_step_corr = 0, time_2 = 0, model = "OLS")
-# write away the results
+
 write.csv(out11_neg_slope, "Output/results/out11_neg_slope_3.csv")
 ```

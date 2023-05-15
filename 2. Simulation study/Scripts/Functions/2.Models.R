@@ -1,9 +1,9 @@
-# run models 
+# OLS models 
 run_OLS <- function(dd_long, additional_step_corr, time_2){
   # The function runs a OLS segmented regression model and outputs the beta's and t-values 
   #of the intervention dummy and the interaction between this dummy and time. 
   
-  # OLS regression
+  # Check which scenario is used, and run the correct model
   if (time_2 == 0 & additional_step_corr == 0){
     M1 <- lm(score ~ time*treatment, data = dd_long) 
   }
@@ -14,8 +14,10 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
     M1 <- lm(value ~time*treatment + I(time^2), dd_long)
   }
   
-  # obtain coefficients
+  
   if (additional_step_corr == 0 & time_2 == 0){
+    
+    # Obtain the coefficients
     beta_1 <- summary(M1)$coefficients[2,1]
     beta_2 <- summary(M1)$coefficients[3,1]
     beta_3 <- summary(M1)$coefficients[4,1]
@@ -26,6 +28,8 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
     t_value_slope_M1 <- summary(M1)$coefficients[4,3]
   }
   else if (additional_step_corr == 1){
+    
+    # Obtain the coefficients
     beta_1 <- summary(M1)$coefficients[2,1]
     beta_2 <- summary(M1)$coefficients[3,1]
     beta_3 <- summary(M1)$coefficients[5,1]
@@ -39,6 +43,8 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
   }
   
   else if (time_2 == 1){
+    
+      # Obtain the coefficients
       beta_1 <- summary(M1)$coefficients[2,1]
       beta_2 <- summary(M1)$coefficients[3,1]
       beta_3 <- summary(M1)$coefficients[5,1]
@@ -48,6 +54,8 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
       t_value_step_M1 <- summary(M1)$coefficients[3,3]
       t_value_slope_M1 <- summary(M1)$coefficients[5,3]
   }
+  
+  # check if the t_values are above the critical value
   if (abs(t_value_pre_slope) > 1.96){
     significant_pre_slope <- 1
   }
@@ -76,13 +84,13 @@ run_OLS <- function(dd_long, additional_step_corr, time_2){
     significant_step2 <- 0
   }
   
-  
+  # return the power, and cofficients for all parameters
   return(list(significant_pre_slope = significant_pre_slope, significant_step = significant_step,
               significant_slope = significant_slope, significant_step2 = significant_step2, beta_1 = beta_1, beta_2 = beta_2,
               beta_3 = beta_3, beta_4 = beta_4))
 }
 
-# run models 
+# Formula for ML models 
 run_ML <- function(dd_long){
   # The function runs a ML segmented regression model and outputs the beta's and t-values 
   #of the intervention dummy and the interaction between this dummy and time. 
@@ -126,7 +134,7 @@ run_ML <- function(dd_long){
               beta_3 = beta_3))
 }
 
-# growth model
+# Formula for latent growth model
 run_SEM <- function(wide, v_name, cov = FALSE){
   
   # Latent growth curve model

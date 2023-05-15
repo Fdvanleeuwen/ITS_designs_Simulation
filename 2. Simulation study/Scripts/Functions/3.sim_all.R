@@ -1,11 +1,12 @@
 sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_time, effect_sizes, treatment_step, treatment_slope, additional_step, additional_step_corr, time_2, model = c("OLS, ML, SEM"), cov = FALSE){
   # The function takes in all arguments needed for the simulation study and outputs the power/bias.
-  #set.seed(seed)
   
+  # The function generates all possible combinations of step sizes and slope sizes.
   All_conditions <- All_conditions(effect_sizes, Slope)
   step_conitions <- All_conditions$step_size_all
   slope_conitions <- All_conditions$slope_size_all
 
+  # Initialize vectors to store the results.
   significant_pre_slope_all <- c()
   significant_step_all <- c()
   significant_slope_all <- c()
@@ -22,7 +23,9 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
   N_pers_all <- c()
   effect_sizes_all <- c()
   
+  # Loop over all possible combinations of step sizes and slope sizes.
   for (EV in 1:length(step_conitions)){
+    # Initialize vectors to store the results for each combination of step sizes and slope sizes.
     significant_pre_slope <- c()
     significant_step <- c()
     significant_slope <- c()
@@ -38,11 +41,15 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
     N_t <- c()
     N_pers <- c()
     
+    # Calculate the step and slope sizes for the current combination.
     step = step_conitions[EV]*treatment_step
     slope = slope_conitions[EV]*treatment_slope
     additional_step_use = step*0.5*additional_step
 
+    # Loop over all the number of time points.
     for (l in 1:length(N_time)){
+      
+      # Initialize result matrices for this iteration
       significant_pre_slope_sub <- matrix(NA,nrow=length(N_person),ncol=N_sim)
       significant_step_sub <- matrix(NA,nrow=length(N_person),ncol=N_sim)
       significant_slope_sub <- matrix(NA,nrow=length(N_person),ncol=N_sim)
@@ -104,6 +111,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
           N_pers_sub[p] <- N_person[p]
 
         }
+        #calculate mean and sd
         significant_pre_slope2 <- rowMeans(significant_pre_slope_sub)
         significant_step2 <- rowMeans(significant_step_sub)
         significant_slope2 <- rowMeans(significant_slope_sub)
@@ -117,6 +125,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
         Precision_b3_sub_2 <- (apply(bias_precent_b3_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p]))
         Precision_b4_sub_2 <- (apply(bias_precent_b4_sub, 1, sd, na.rm=TRUE) / sqrt(N_person[p]))
       }
+      #store results
       significant_pre_slope <- append(significant_pre_slope, significant_pre_slope2)
       significant_step <- append(significant_step, significant_step2)
       significant_slope <- append(significant_slope, significant_slope2)
@@ -133,6 +142,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
       N_pers <- append(N_pers, N_person)
       
     }
+    #store results
     significant_pre_slope_all <- append(significant_pre_slope_all, significant_pre_slope)
     significant_step_all <- append(significant_step_all, significant_step)
     significant_slope_all <- append(significant_slope_all, significant_slope)
@@ -150,6 +160,7 @@ sim_all <- function(N_person, N_time, N_sim, var, Intercept, Slope, seed, var_ti
     effect_sizes_all <- append(effect_sizes_all, rep(effect_sizes[EV],length(N_time)*length(N_person)))
   }
 
+  # create a dataframe to return all results
   power <- data_frame(effect_sizes = effect_sizes_all,
                       N_t = N_t_all,
                       N_pers = N_pers_all,
